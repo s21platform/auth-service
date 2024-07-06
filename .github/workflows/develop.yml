@@ -65,4 +65,4 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE_DEVELOP }}
           script: |
             docker pull ${{ secrets.CR_REGISTRY }}/${{ secrets.CR_NAME }}:develop
-            docker-compose -f ~/s21platform/docker-compose.yml up -d auth
+            docker-compose -f ~/space21/docker-compose-dev.yml up -d auth-service
