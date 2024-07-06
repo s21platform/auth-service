@@ -22,7 +22,6 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 		username += "@student.21-school.ru"
 	}
 	// TODO делать запрос в community rpc для уточнения студент ли пользователь
-
 	t, err := s.schoolS.DoLogin(ctx, username, req.Password)
 	if err != nil {
 		return nil, err
