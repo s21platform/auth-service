@@ -20,6 +20,9 @@ type School struct {
 	Port string `env:"SCHOOL_SERVICE_PORT"`
 }
 
+type Cache struct {
+}
+
 func MustLoad() *Config {
 	cfg := &Config{}
 
