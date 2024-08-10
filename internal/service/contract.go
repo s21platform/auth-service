@@ -7,6 +7,10 @@ type SchoolS interface {
 	DoLogin(ctx context.Context, email, password string) (string, error)
 }
 
+type CommunityS interface {
+	CheckPeer(ctx context.Context, email string) (bool, error)
+}
+
 type RedisR interface {
 	Get()
 	Set()

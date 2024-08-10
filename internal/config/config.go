@@ -6,13 +6,19 @@ import (
 )
 
 type Config struct {
-	Service Service
-	School  School
+	Service   Service
+	School    School
+	Community Community
 }
 
 type Service struct {
 	Port   string `env:"AUTH_SERVICE_PORT"`
 	Secret string `env:"SECRET_KEY"`
+}
+
+type Community struct {
+	Host string `env:"COMMUNITY_SERVICE_HOST"`
+	Port string `env:"COMMUNITY_SERVICE_PORT"`
 }
 
 type School struct {
