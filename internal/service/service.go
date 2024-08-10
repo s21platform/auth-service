@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	auth_proto "github.com/s21platform/auth-proto/auth-proto"
 	"github.com/s21platform/auth-service/internal/config"
+	"google.golang.org/grpc/metadata"
 	"strings"
 	"time"
 )
@@ -17,6 +19,8 @@ type Server struct {
 }
 
 func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
+	md, _ := metadata.FromIncomingContext(ctx)
+	fmt.Println(md.Get("trace-id"))
 	username := req.Username
 	if !strings.HasSuffix(req.Username, "@student.21-school.ru") {
 		username += "@student.21-school.ru"

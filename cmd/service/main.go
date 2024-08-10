@@ -31,6 +31,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Cannnot listen port: %s; Error: %s", cfg.Service.Port, err)
 	}
+	fmt.Println(cfg)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Cannnot start service: %s; Error: %s", cfg.Service.Port, err)
 	}
