@@ -49,6 +49,44 @@ func (mr *MockSchoolSMockRecorder) DoLogin(ctx, email, password interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoLogin", reflect.TypeOf((*MockSchoolS)(nil).DoLogin), ctx, email, password)
 }
 
+// MockCommunityS is a mock of CommunityS interface.
+type MockCommunityS struct {
+	ctrl     *gomock.Controller
+	recorder *MockCommunitySMockRecorder
+}
+
+// MockCommunitySMockRecorder is the mock recorder for MockCommunityS.
+type MockCommunitySMockRecorder struct {
+	mock *MockCommunityS
+}
+
+// NewMockCommunityS creates a new mock instance.
+func NewMockCommunityS(ctrl *gomock.Controller) *MockCommunityS {
+	mock := &MockCommunityS{ctrl: ctrl}
+	mock.recorder = &MockCommunitySMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCommunityS) EXPECT() *MockCommunitySMockRecorder {
+	return m.recorder
+}
+
+// CheckPeer mocks base method.
+func (m *MockCommunityS) CheckPeer(ctx context.Context, email string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckPeer", ctx, email)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckPeer indicates an expected call of CheckPeer.
+func (mr *MockCommunitySMockRecorder) CheckPeer(ctx, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPeer", reflect.TypeOf((*MockCommunityS)(nil).CheckPeer), ctx, email)
+}
+
 // MockRedisR is a mock of RedisR interface.
 type MockRedisR struct {
 	ctrl     *gomock.Controller
