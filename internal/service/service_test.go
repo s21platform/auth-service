@@ -24,15 +24,18 @@ func TestServer_Login(t *testing.T) {
 	mockSchoolSrv := NewMockSchoolS(ctrl)
 	mockCommunitySrv := NewMockCommunityS(ctrl)
 	MockRedisRepo := NewMockRedisR(ctrl)
+	mockUserSrv := NewMockUserService(ctrl)
 
 	t.Run("should_ok_full_username", func(t *testing.T) {
 		login := "garroshm@student.21-school.ru"
 		password := "123"
+		uuid := "123"
 
 		mockSchoolSrv.EXPECT().DoLogin(gomock.Any(), login, password).Return("123", nil)
 		mockCommunitySrv.EXPECT().CheckPeer(gomock.Any(), login).Return(true, nil)
+		mockUserSrv.EXPECT().GetOrSetUser(gomock.Any(), login).Return(uuid, nil)
 
-		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo)
+		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo, mockUserSrv)
 		_, err := s.Login(ctx, &auth_proto.LoginRequest{
 			Username: login,
 			Password: password,
@@ -46,8 +49,9 @@ func TestServer_Login(t *testing.T) {
 
 		mockSchoolSrv.EXPECT().DoLogin(gomock.Any(), login+"@student.21-school.ru", password).Return("123", nil)
 		mockCommunitySrv.EXPECT().CheckPeer(gomock.Any(), login+"@student.21-school.ru").Return(true, nil)
+		mockUserSrv.EXPECT().GetOrSetUser(gomock.Any(), login+"@student.21-school.ru").Return("123", nil)
 
-		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo)
+		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo, mockUserSrv)
 		_, err := s.Login(ctx, &auth_proto.LoginRequest{
 			Username: login,
 			Password: password,
@@ -60,7 +64,7 @@ func TestServer_Login(t *testing.T) {
 
 		mockCommunitySrv.EXPECT().CheckPeer(gomock.Any(), gomock.Any()).Return(true, err_)
 
-		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo)
+		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo, mockUserSrv)
 		_, err := s.Login(ctx, &auth_proto.LoginRequest{})
 		assert.Equal(t, err, err_)
 	})

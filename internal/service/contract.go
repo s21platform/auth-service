@@ -11,6 +11,10 @@ type CommunityS interface {
 	CheckPeer(ctx context.Context, email string) (bool, error)
 }
 
+type UserService interface {
+	GetOrSetUser(ctx context.Context, email string) (string, error)
+}
+
 type RedisR interface {
 	Get()
 	Set()

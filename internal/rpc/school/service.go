@@ -10,11 +10,11 @@ import (
 	"log"
 )
 
-type Handle struct {
+type Service struct {
 	client school_proto.SchoolServiceClient
 }
 
-func (h *Handle) DoLogin(ctx context.Context, email, password string) (string, error) {
+func (h *Service) DoLogin(ctx context.Context, email, password string) (string, error) {
 	resp, err := h.client.Login(ctx, &school_proto.SchoolLoginRequest{
 		Email:    email,
 		Password: password,
@@ -25,11 +25,11 @@ func (h *Handle) DoLogin(ctx context.Context, email, password string) (string, e
 	return resp.Token, nil
 }
 
-func MustConnect(cfg *config.Config) *Handle {
+func MustConnect(cfg *config.Config) *Service {
 	Conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.School.Host, cfg.School.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("could not connect to school rpc: %v", err)
 	}
 	Client := school_proto.NewSchoolServiceClient(Conn)
-	return &Handle{client: Client}
+	return &Service{client: Client}
 }
