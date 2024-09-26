@@ -21,6 +21,8 @@ github.com/s21platform/community-proto v0.0.0-20240810113935-14f2cc500df8 h1:Xjx
 github.com/s21platform/community-proto v0.0.0-20240810113935-14f2cc500df8/go.mod h1:V65PB3oIWKaeUTY4USkAe5rlYz748N8K1ZCQ/Eb7lPY=
 github.com/s21platform/school-proto v0.0.0-20240515074128-d7365c2f61dc h1:6xFZNmPAy75XCADG6W4yj+j8U3oSxymluYJHn8avPfg=
 github.com/s21platform/school-proto v0.0.0-20240515074128-d7365c2f61dc/go.mod h1:OHdop/i6tGCF6TfX1Wgh9rcjlJaX5OK8AMD5XnBYtm8=
+github.com/s21platform/user-proto v0.0.3 h1:WReG7PMBvmgCRYp2QKHnirGx7VAUAmG4S8MrI15zqYI=
+github.com/s21platform/user-proto v0.0.3/go.mod h1:IIcTCyxXtvdIyuv3sI6a/iey2CTPJ/t7K9bvh52eazg=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
