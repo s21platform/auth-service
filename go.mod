@@ -8,7 +8,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/s21platform/auth-proto v0.0.0-20240514091002-319cbc4745e5
 	github.com/s21platform/community-proto v0.0.0-20240810113935-14f2cc500df8
-	github.com/s21platform/school-proto v0.0.0-20240515074128-d7365c2f61dc
+	github.com/s21platform/school-proto v0.0.1
 	github.com/s21platform/user-proto v0.0.3
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/grpc v1.65.0
