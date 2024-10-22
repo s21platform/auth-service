@@ -9,6 +9,7 @@ type Config struct {
 	Service   Service
 	School    School
 	Community Community
+	User      User
 }
 
 type Service struct {
@@ -24,6 +25,11 @@ type Community struct {
 type School struct {
 	Host string `env:"SCHOOL_SERVICE_HOST"`
 	Port string `env:"SCHOOL_SERVICE_PORT"`
+}
+
+type User struct {
+	Host string `env:"USER_SERVICE_HOST"`
+	Port string `env:"USER_SERVICE_PORT"`
 }
 
 type Cache struct {

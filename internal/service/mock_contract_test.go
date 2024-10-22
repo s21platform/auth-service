@@ -87,6 +87,44 @@ func (mr *MockCommunitySMockRecorder) CheckPeer(ctx, email interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPeer", reflect.TypeOf((*MockCommunityS)(nil).CheckPeer), ctx, email)
 }
 
+// MockUserService is a mock of UserService interface.
+type MockUserService struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserServiceMockRecorder
+}
+
+// MockUserServiceMockRecorder is the mock recorder for MockUserService.
+type MockUserServiceMockRecorder struct {
+	mock *MockUserService
+}
+
+// NewMockUserService creates a new mock instance.
+func NewMockUserService(ctrl *gomock.Controller) *MockUserService {
+	mock := &MockUserService{ctrl: ctrl}
+	mock.recorder = &MockUserServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
+	return m.recorder
+}
+
+// GetOrSetUser mocks base method.
+func (m *MockUserService) GetOrSetUser(ctx context.Context, email string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrSetUser", ctx, email)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrSetUser indicates an expected call of GetOrSetUser.
+func (mr *MockUserServiceMockRecorder) GetOrSetUser(ctx, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrSetUser", reflect.TypeOf((*MockUserService)(nil).GetOrSetUser), ctx, email)
+}
+
 // MockRedisR is a mock of RedisR interface.
 type MockRedisR struct {
 	ctrl     *gomock.Controller
