@@ -22,9 +22,8 @@ type Server struct {
 }
 
 func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
-	//md, _ := metadata.FromIncomingContext(ctx)
-	//fmt.Println(md.Get("trace-id"))
 	username := req.Username
+	username = strings.ToLower(username)
 	if !strings.HasSuffix(req.Username, "@student.21-school.ru") {
 		username += "@student.21-school.ru"
 	}
