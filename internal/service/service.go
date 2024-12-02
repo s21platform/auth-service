@@ -22,8 +22,8 @@ type Server struct {
 }
 
 func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
+	req.Username = strings.ToLower(req.Username)
 	username := req.Username
-	username = strings.ToLower(username)
 	if !strings.HasSuffix(req.Username, "@student.21-school.ru") {
 		username += "@student.21-school.ru"
 	} else {
