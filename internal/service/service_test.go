@@ -27,9 +27,10 @@ func TestServer_Login(t *testing.T) {
 
 	t.Run("should_ok_full_username", func(t *testing.T) {
 		login := "garroshm@student.21-school.ru"
+		nickname := "garroshm"
 		password := "123"
 
-		mockSchoolSrv.EXPECT().DoLogin(gomock.Any(), login, password).Return("123", nil)
+		mockSchoolSrv.EXPECT().DoLogin(gomock.Any(), nickname, password).Return("123", nil)
 		mockCommunitySrv.EXPECT().CheckPeer(gomock.Any(), login).Return(true, nil)
 
 		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo)
@@ -44,7 +45,7 @@ func TestServer_Login(t *testing.T) {
 		login := "garroshm"
 		password := "123"
 
-		mockSchoolSrv.EXPECT().DoLogin(gomock.Any(), login+"@student.21-school.ru", password).Return("123", nil)
+		mockSchoolSrv.EXPECT().DoLogin(gomock.Any(), login, password).Return("123", nil)
 		mockCommunitySrv.EXPECT().CheckPeer(gomock.Any(), login+"@student.21-school.ru").Return(true, nil)
 
 		s := New(cfg, mockSchoolSrv, mockCommunitySrv, MockRedisRepo)
