@@ -22,11 +22,14 @@ type Server struct {
 }
 
 func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
+	req.Username = strings.ToLower(req.Username)
 	username := req.Username
-	username = strings.ToLower(username)
 	if !strings.HasSuffix(req.Username, "@student.21-school.ru") {
 		username += "@student.21-school.ru"
+	} else {
+		req.Username = strings.ReplaceAll(req.Username, "@student.21-school.ru", "")
 	}
+
 	is, err := s.communityS.CheckPeer(ctx, username)
 	if err != nil {
 		log.Println("Error checking user", err)
@@ -38,7 +41,7 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 		return nil, status.Errorf(codes.FailedPrecondition, "Вы не являетесь участником s21")
 	}
 
-	t, err := s.schoolS.DoLogin(ctx, username, req.Password)
+	t, err := s.schoolS.DoLogin(ctx, req.Username, req.Password)
 	if err != nil {
 		log.Println("Error do login", err)
 		return nil, status.Errorf(codes.Unauthenticated, "Неверный логин или пароль")
