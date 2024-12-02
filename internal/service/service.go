@@ -18,12 +18,12 @@ type Server struct {
 	communityS CommunityS
 	schoolS    SchoolS
 	redisR     RedisR
+	uS         UserService
 }
 
 func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
-	//md, _ := metadata.FromIncomingContext(ctx)
-	//fmt.Println(md.Get("trace-id"))
 	username := req.Username
+	username = strings.ToLower(username)
 	if !strings.HasSuffix(req.Username, "@student.21-school.ru") {
 		username += "@student.21-school.ru"
 	} else {
@@ -44,7 +44,12 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 	t, err := s.schoolS.DoLogin(ctx, req.Username, req.Password)
 	if err != nil {
 		log.Println("Error do login", err)
-		return nil, err
+		return nil, status.Errorf(codes.Unauthenticated, "Неверный логин или пароль")
+	}
+
+	resp, err := s.uS.GetOrSetUser(ctx, username)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Не удалось получить данные пользователя")
 	}
 
 	data := jwt.MapClaims{
@@ -52,6 +57,7 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 		"role":        "student",
 		"accessToken": t,
 		"exp":         time.Now().Add(time.Hour * 9).Unix(),
+		"uid":         resp,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 	tokenString, err := token.SignedString([]byte(s.cfg.Service.Secret))
@@ -62,11 +68,12 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 	return &auth_proto.LoginResponse{Jwt: tokenString}, nil
 }
 
-func New(cfg *config.Config, schoolService SchoolS, communityService CommunityS, redis RedisR) *Server {
+func New(cfg *config.Config, schoolService SchoolS, communityService CommunityS, redis RedisR, uS UserService) *Server {
 	return &Server{
 		cfg:        cfg,
 		schoolS:    schoolService,
 		communityS: communityService,
 		redisR:     redis,
+		uS:         uS,
 	}
 }
