@@ -7,6 +7,7 @@ import (
 	"github.com/s21platform/auth-service/internal/repository/redis"
 	"github.com/s21platform/auth-service/internal/rpc/community"
 	"github.com/s21platform/auth-service/internal/rpc/school"
+	"github.com/s21platform/auth-service/internal/rpc/user"
 	"github.com/s21platform/auth-service/internal/service"
 	"google.golang.org/grpc"
 	"log"
@@ -21,9 +22,10 @@ func main() {
 	redisRepo := redis.New(cfg)
 	schoolService := school.MustConnect(cfg)
 	communityService := community.MustConnect(cfg)
+	userService := user.NewService(cfg)
 
 	// Создание объекта самого сервера
-	thisService := service.New(cfg, schoolService, communityService, redisRepo)
+	thisService := service.New(cfg, schoolService, communityService, redisRepo, userService)
 
 	// Создание gRPC сервера и регистрация обработчика
 	s := grpc.NewServer()
