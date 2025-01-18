@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
+
+	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/dgrijalva/jwt-go"
 	auth_proto "github.com/s21platform/auth-proto/auth-proto"
@@ -23,6 +26,9 @@ type Server struct {
 }
 
 func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("Login")
+
 	req.Username = strings.ToLower(req.Username)
 	username := req.Username
 	if !strings.HasSuffix(req.Username, "@student.21-school.ru") {
@@ -33,23 +39,27 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 
 	is, err := s.communityS.CheckPeer(ctx, username)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check user from community-service: %v", err))
 		log.Println("Error checking user", err)
 		return nil, err
 	}
 
 	if !is {
+		logger.Error(fmt.Sprintf("user is not a community member: %v", err))
 		log.Println("User isn't a community")
 		return nil, status.Errorf(codes.FailedPrecondition, "Вы не являетесь участником s21")
 	}
 
 	t, err := s.schoolS.DoLogin(ctx, req.Username, req.Password)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to auth user in school-service: %v", err))
 		log.Println("Error do login", err)
 		return nil, status.Errorf(codes.Unauthenticated, "Неверный логин или пароль")
 	}
 
 	resp, err := s.uS.GetOrSetUser(ctx, username)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get (or set) user into user-servcie: %v", err))
 		return nil, status.Errorf(codes.Internal, "Не удалось получить данные пользователя")
 	}
 
@@ -63,6 +73,7 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 	tokenString, err := token.SignedString([]byte(s.cfg.Service.Secret))
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to generate token: %v", err))
 		log.Println("Error signing token", err)
 		return nil, err
 	}
