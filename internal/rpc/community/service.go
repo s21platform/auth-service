@@ -3,11 +3,12 @@ package community
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/s21platform/auth-service/internal/config"
 	community_proto "github.com/s21platform/community-proto/community-proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 )
 
 type Handle struct {

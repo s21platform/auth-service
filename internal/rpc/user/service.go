@@ -3,12 +3,15 @@ package user
 import (
 	"context"
 	"fmt"
+	"log"
+
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/s21platform/auth-service/internal/config"
 	userproto "github.com/s21platform/user-proto/user-proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 )
 
 type Service struct {
@@ -17,7 +20,7 @@ type Service struct {
 
 func NewService(cfg *config.Config) *Service {
 	connStr := fmt.Sprintf("%s:%s", cfg.User.Host, cfg.User.Port)
-	conn, err := grpc.NewClient(connStr, grpc.WithInsecure())
+	conn, err := grpc.NewClient(connStr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}

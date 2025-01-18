@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	auth_proto "github.com/s21platform/auth-proto/auth-proto"
 	"github.com/s21platform/auth-service/internal/config"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func TestServer_Login(t *testing.T) {
@@ -86,5 +87,4 @@ func TestServer_Login(t *testing.T) {
 		_, err := s.Login(ctx, &auth_proto.LoginRequest{})
 		assert.Equal(t, err, err_)
 	})
-
 }

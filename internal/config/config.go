@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/ilyakaznacheev/cleanenv"
 	"log"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
@@ -10,11 +11,15 @@ type Config struct {
 	School    School
 	Community Community
 	User      User
+	Platform  Platform
+	Metrics   Metrics
+	Logger    Logger
 }
 
 type Service struct {
 	Port   string `env:"AUTH_SERVICE_PORT"`
 	Secret string `env:"SECRET_KEY"`
+	Name   string `env:"AUTH_SERVICE_NAME"`
 }
 
 type Community struct {
@@ -30,6 +35,20 @@ type School struct {
 type User struct {
 	Host string `env:"USER_SERVICE_HOST"`
 	Port string `env:"USER_SERVICE_PORT"`
+}
+
+type Metrics struct {
+	Host string `env:"GRAFANA_HOST"`
+	Port int    `env:"GRAFANA_PORT"`
+}
+
+type Logger struct {
+	Host string `env:"LOGGER_SERVICE_HOST"`
+	Port string `env:"LOGGER_SERVICE_PORT"`
+}
+
+type Platform struct {
+	Env string `env:"ENV"`
 }
 
 type Cache struct {

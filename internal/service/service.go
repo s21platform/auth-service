@@ -2,14 +2,15 @@ package service
 
 import (
 	"context"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	auth_proto "github.com/s21platform/auth-proto/auth-proto"
 	"github.com/s21platform/auth-service/internal/config"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"strings"
-	"time"
 )
 
 type Server struct {

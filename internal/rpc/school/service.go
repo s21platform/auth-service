@@ -3,11 +3,12 @@ package school
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/s21platform/auth-service/internal/config"
 	school_proto "github.com/s21platform/school-proto/school-proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 )
 
 type Service struct {
