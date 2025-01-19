@@ -11,12 +11,12 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type Service struct {
+type Client struct {
 	client school_proto.SchoolServiceClient
 }
 
-func (h *Service) DoLogin(ctx context.Context, email, password string) (string, error) {
-	resp, err := h.client.Login(ctx, &school_proto.SchoolLoginRequest{
+func (c *Client) DoLogin(ctx context.Context, email, password string) (string, error) {
+	resp, err := c.client.Login(ctx, &school_proto.SchoolLoginRequest{
 		Email:    email,
 		Password: password,
 	})
@@ -26,11 +26,11 @@ func (h *Service) DoLogin(ctx context.Context, email, password string) (string, 
 	return resp.Token, nil
 }
 
-func MustConnect(cfg *config.Config) *Service {
+func MustConnect(cfg *config.Config) *Client {
 	Conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.School.Host, cfg.School.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("could not connect to school rpc: %v", err)
+		log.Fatalf("could not connect to school client: %v", err)
 	}
-	Client := school_proto.NewSchoolServiceClient(Conn)
-	return &Service{client: Client}
+	client := school_proto.NewSchoolServiceClient(Conn)
+	return &Client{client: client}
 }

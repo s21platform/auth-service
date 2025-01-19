@@ -14,22 +14,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type Service struct {
+type Client struct {
 	client userproto.UserServiceClient
 }
 
-func NewService(cfg *config.Config) *Service {
+func MustConnect(cfg *config.Config) *Client {
 	connStr := fmt.Sprintf("%s:%s", cfg.User.Host, cfg.User.Port)
 	conn, err := grpc.NewClient(connStr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
 	client := userproto.NewUserServiceClient(conn)
-	return &Service{client}
+	return &Client{client}
 }
 
-func (s *Service) GetOrSetUser(ctx context.Context, email string) (string, error) {
-	resp, err := s.client.GetUserByLogin(ctx, &userproto.GetUserByLoginIn{
+func (c *Client) GetOrSetUser(ctx context.Context, email string) (string, error) {
+	resp, err := c.client.GetUserByLogin(ctx, &userproto.GetUserByLoginIn{
 		Login: email,
 	})
 	if err != nil {

@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type Server struct {
+type Service struct {
 	auth_proto.UnimplementedAuthServiceServer
 	cfg        *config.Config
 	communityS CommunityS
@@ -25,7 +25,7 @@ type Server struct {
 	uS         UserService
 }
 
-func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
+func (s *Service) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("Login")
 
@@ -80,8 +80,8 @@ func (s *Server) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth
 	return &auth_proto.LoginResponse{Jwt: tokenString}, nil
 }
 
-func New(cfg *config.Config, schoolService SchoolS, communityService CommunityS, redis RedisR, uS UserService) *Server {
-	return &Server{
+func New(cfg *config.Config, schoolService SchoolS, communityService CommunityS, redis RedisR, uS UserService) *Service {
+	return &Service{
 		cfg:        cfg,
 		schoolS:    schoolService,
 		communityS: communityService,
