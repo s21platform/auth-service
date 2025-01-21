@@ -8,6 +8,8 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/s21platform/auth-proto v0.0.0-20240514091002-319cbc4745e5
 	github.com/s21platform/community-proto v0.0.0-20240810113935-14f2cc500df8
+	github.com/s21platform/logger-lib v0.0.6
+	github.com/s21platform/metrics-lib v0.0.9
 	github.com/s21platform/school-proto v0.0.1
 	github.com/s21platform/user-proto v0.0.3
 	github.com/stretchr/testify v1.9.0
@@ -16,6 +18,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
+	github.com/alexcesaro/statsd v2.0.0+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
