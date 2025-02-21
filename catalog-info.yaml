@@ -2,18 +2,17 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: auth
-  description: Authentication and authorization service for the platform
+  description: Сервис авторизации пользователей
   annotations:
     github.com/project-slug: s21platform/auth-service  # Укажите правильный репозиторий
 #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
   tags:
-    - auth
-    - security
-    - jwt
+    - gRPC
+    - JWT
 spec:
   type: service
   lifecycle: production
-  owner: alexseipopov  # GitHub-логин ответственного
+  owner: user-service-team  # GitHub-логин ответственного
   providesApis:
     - auth-api  # API, который предоставляет сервис
   consumesApis:
@@ -24,4 +23,4 @@ spec:
     - component:community
     - component:school
     - component:user
-  system: authentication-system  # Можно указать систему, если есть
+#  system: authentication-system  # Можно указать систему, если есть
