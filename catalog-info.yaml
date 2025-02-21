@@ -8,7 +8,7 @@ metadata:
 #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
   tags:
     - grpc
-    - JWT
+    - jwt
 spec:
   type: service
   lifecycle: production
