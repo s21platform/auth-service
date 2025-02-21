@@ -12,7 +12,7 @@ metadata:
 spec:
   type: service
   lifecycle: production
-  owner: user-service-team  # GitHub-логин ответственного
+  owner: auth-service-team  # GitHub-логин ответственного
   providesApis:
     - auth-api  # API, который предоставляет сервис
   consumesApis:
