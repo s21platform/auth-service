@@ -7,7 +7,7 @@ metadata:
     github.com/project-slug: s21platform/auth-service  # Укажите правильный репозиторий
 #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
   tags:
-    - gRPC
+    - grpc
     - JWT
 spec:
   type: service
