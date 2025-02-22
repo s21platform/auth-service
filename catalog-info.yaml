@@ -9,6 +9,10 @@ metadata:
   tags:
     - grpc
     - jwt
+  links:
+    - url: https://metric.x.space-21.ru/d/ceae9eguvvh8gf/auth-service?orgId=1&refresh=30s
+      title: Grafana
+      icon: dashboard
 spec:
   type: service
   lifecycle: production
