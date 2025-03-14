@@ -22,7 +22,7 @@ spec:
   consumesApis:
     - community-api
     - school-api
-    - user-api
+    - user-v0-GetUserByLogin
   dependsOn:
     - component:community
     - component:school
