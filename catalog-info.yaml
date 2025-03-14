@@ -18,11 +18,11 @@ spec:
   lifecycle: production
   owner: auth-service-team  # GitHub-логин ответственного
   providesApis:
-    - auth-api  # API, который предоставляет сервис
+    - Login-v0
   consumesApis:
     - community-api
     - school-api
-    - user-v0-GetUserByLogin
+    - GetUserByLogin-v0
   dependsOn:
     - component:community
     - component:school
