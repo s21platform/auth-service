@@ -9,10 +9,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	auth_proto "github.com/s21platform/auth-proto/auth-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/auth-service/internal/config"
+	"github.com/s21platform/auth-service/pkg/auth"
 )
 
 func TestServer_Login(t *testing.T) {
@@ -44,7 +44,7 @@ func TestServer_Login(t *testing.T) {
 		mockUserSrv.EXPECT().GetOrSetUser(gomock.Any(), login).Return(uuid, nil)
 
 		s := New(mockSchoolSrv, mockCommunitySrv, mockUserSrv, secret)
-		_, err := s.Login(ctx, &auth_proto.LoginRequest{
+		_, err := s.Login(ctx, &auth.LoginRequest{
 			Username: login,
 			Password: password,
 		})
@@ -63,7 +63,7 @@ func TestServer_Login(t *testing.T) {
 		mockUserSrv.EXPECT().GetOrSetUser(gomock.Any(), login+"@student.21-school.ru").Return("123", nil)
 
 		s := New(mockSchoolSrv, mockCommunitySrv, mockUserSrv, secret)
-		_, err := s.Login(ctx, &auth_proto.LoginRequest{
+		_, err := s.Login(ctx, &auth.LoginRequest{
 			Username: login,
 			Password: password,
 		})
@@ -82,7 +82,7 @@ func TestServer_Login(t *testing.T) {
 		mockUserSrv.EXPECT().GetOrSetUser(gomock.Any(), login+"@student.21-school.ru").Return("123", nil)
 
 		s := New(mockSchoolSrv, mockCommunitySrv, mockUserSrv, secret)
-		_, err := s.Login(ctx, &auth_proto.LoginRequest{
+		_, err := s.Login(ctx, &auth.LoginRequest{
 			Username: strings.ToUpper(login),
 			Password: password,
 		})
@@ -99,7 +99,7 @@ func TestServer_Login(t *testing.T) {
 		mockCommunitySrv.EXPECT().CheckPeer(gomock.Any(), gomock.Any()).Return(true, err_)
 
 		s := New(mockSchoolSrv, mockCommunitySrv, mockUserSrv, secret)
-		_, err := s.Login(ctx, &auth_proto.LoginRequest{})
+		_, err := s.Login(ctx, &auth.LoginRequest{})
 		assert.Equal(t, err, err_)
 	})
 }

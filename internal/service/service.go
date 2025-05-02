@@ -10,14 +10,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	auth_proto "github.com/s21platform/auth-proto/auth-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/auth-service/internal/config"
+	"github.com/s21platform/auth-service/pkg/auth"
 )
 
 type Service struct {
-	auth_proto.UnimplementedAuthServiceServer
+	auth.UnimplementedAuthServiceServer
 	communityS CommunityS
 	schoolS    SchoolS
 	userS      UserS
@@ -33,7 +33,7 @@ func New(schoolService SchoolS, communityService CommunityS, userS UserS, secret
 	}
 }
 
-func (s *Service) Login(ctx context.Context, req *auth_proto.LoginRequest) (*auth_proto.LoginResponse, error) {
+func (s *Service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("Login")
 
@@ -81,5 +81,5 @@ func (s *Service) Login(ctx context.Context, req *auth_proto.LoginRequest) (*aut
 		logger.Error(fmt.Sprintf("failed to sign token: %v", err))
 		return nil, err
 	}
-	return &auth_proto.LoginResponse{Jwt: tokenString}, nil
+	return &auth.LoginResponse{Jwt: tokenString}, nil
 }
