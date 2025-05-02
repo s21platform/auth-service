@@ -7,7 +7,6 @@ import (
 
 	"google.golang.org/grpc"
 
-	auth_proto "github.com/s21platform/auth-proto/auth-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/metrics-lib/pkg"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/s21platform/auth-service/internal/config"
 	"github.com/s21platform/auth-service/internal/infra"
 	"github.com/s21platform/auth-service/internal/service"
+	"github.com/s21platform/auth-service/pkg/auth"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 		),
 	)
 
-	auth_proto.RegisterAuthServiceServer(grpcServer, authService)
+	auth.RegisterAuthServiceServer(grpcServer, authService)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
