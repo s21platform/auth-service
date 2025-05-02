@@ -51,7 +51,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Cannnot listen port: %s; Error: %s", cfg.Service.Port, err)
 	}
-	log.Println("starting grpc server")
+	log.Println("starting grpc server1")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Cannnot start service: %s; Error: %s", cfg.Service.Port, err)
 	}
