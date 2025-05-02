@@ -20,7 +20,7 @@ type Client struct {
 }
 
 func MustConnect(cfg *config.Config) *Client {
-	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.Community.Host, cfg.Community.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.User.Host, cfg.User.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to user service: %v", err)
 	}
