@@ -18,14 +18,16 @@ import (
 
 type Service struct {
 	auth.UnimplementedAuthServiceServer
-	communityS CommunityS
+	repository DBRepo
 	schoolS    SchoolS
+	communityS CommunityS
 	userS      UserS
 	secret     string
 }
 
-func New(schoolService SchoolS, communityService CommunityS, userS UserS, secret string) *Service {
+func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userS UserS, secret string) *Service {
 	return &Service{
+		repository: repository,
 		schoolS:    schoolService,
 		communityS: communityService,
 		userS:      userS,
@@ -82,4 +84,20 @@ func (s *Service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 		return nil, err
 	}
 	return &auth.LoginResponse{Jwt: tokenString}, nil
+}
+
+func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmailAvailabilityIn) (*auth.CheckEmailAvailabilityOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("CheckEmailAvailability")
+
+	// todo добавить rate limiter
+
+	in.Email = strings.ToLower(in.Email)
+	isAvailable, err := s.repository.IsEmailAvailable(ctx, in.Email)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check email: %v", err))
+		return nil, err
+	}
+
+	return &auth.CheckEmailAvailabilityOut{IsAvailable: isAvailable}, nil
 }

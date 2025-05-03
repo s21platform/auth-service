@@ -11,6 +11,44 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
+// MockDBRepo is a mock of DBRepo interface.
+type MockDBRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockDBRepoMockRecorder
+}
+
+// MockDBRepoMockRecorder is the mock recorder for MockDBRepo.
+type MockDBRepoMockRecorder struct {
+	mock *MockDBRepo
+}
+
+// NewMockDBRepo creates a new mock instance.
+func NewMockDBRepo(ctrl *gomock.Controller) *MockDBRepo {
+	mock := &MockDBRepo{ctrl: ctrl}
+	mock.recorder = &MockDBRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
+	return m.recorder
+}
+
+// IsEmailAvailable mocks base method.
+func (m *MockDBRepo) IsEmailAvailable(ctx context.Context, email string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsEmailAvailable", ctx, email)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsEmailAvailable indicates an expected call of IsEmailAvailable.
+func (mr *MockDBRepoMockRecorder) IsEmailAvailable(ctx, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsEmailAvailable", reflect.TypeOf((*MockDBRepo)(nil).IsEmailAvailable), ctx, email)
+}
+
 // MockSchoolS is a mock of SchoolS interface.
 type MockSchoolS struct {
 	ctrl     *gomock.Controller

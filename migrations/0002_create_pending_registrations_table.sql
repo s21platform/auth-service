@@ -1,5 +1,4 @@
 -- +goose Up
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS pending_registrations
 (
     uuid              UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
@@ -12,4 +11,3 @@ CREATE TABLE IF NOT EXISTS pending_registrations
 
 -- +goose Down
 DROP TABLE IF EXISTS pending_registrations;
-DROP EXTENSION IF EXISTS pgcrypto;

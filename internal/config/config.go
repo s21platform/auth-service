@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Service   Service
+	Postgres  Postgres
 	School    School
 	Community Community
 	User      User
@@ -20,6 +21,14 @@ type Service struct {
 	Port   string `env:"AUTH_SERVICE_PORT"`
 	Secret string `env:"SECRET_KEY"`
 	Name   string `env:"AUTH_SERVICE_NAME"`
+}
+
+type Postgres struct {
+	User     string `env:"AUTH_SERVICE_POSTGRES_USER"`
+	Password string `env:"AUTH_SERVICE_POSTGRES_PASSWORD"`
+	Database string `env:"AUTH_SERVICE_POSTGRES_DB"`
+	Host     string `env:"AUTH_SERVICE_POSTGRES_HOST"`
+	Port     string `env:"AUTH_SERVICE_POSTGRES_PORT"`
 }
 
 type Community struct {

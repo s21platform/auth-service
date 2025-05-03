@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Login_FullMethodName = "/AuthService/Login"
+	AuthService_Login_FullMethodName                  = "/AuthService/Login"
+	AuthService_CheckEmailAvailability_FullMethodName = "/AuthService/CheckEmailAvailability"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -30,6 +31,7 @@ const (
 type AuthServiceClient interface {
 	// Login method for requesting access token from edu platform
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	CheckEmailAvailability(ctx context.Context, in *CheckEmailAvailabilityIn, opts ...grpc.CallOption) (*CheckEmailAvailabilityOut, error)
 }
 
 type authServiceClient struct {
@@ -50,6 +52,16 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	return out, nil
 }
 
+func (c *authServiceClient) CheckEmailAvailability(ctx context.Context, in *CheckEmailAvailabilityIn, opts ...grpc.CallOption) (*CheckEmailAvailabilityOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckEmailAvailabilityOut)
+	err := c.cc.Invoke(ctx, AuthService_CheckEmailAvailability_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -58,6 +70,7 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 type AuthServiceServer interface {
 	// Login method for requesting access token from edu platform
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	CheckEmailAvailability(context.Context, *CheckEmailAvailabilityIn) (*CheckEmailAvailabilityOut, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -70,6 +83,9 @@ type UnimplementedAuthServiceServer struct{}
 
 func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthServiceServer) CheckEmailAvailability(context.Context, *CheckEmailAvailabilityIn) (*CheckEmailAvailabilityOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckEmailAvailability not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -110,6 +126,24 @@ func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_CheckEmailAvailability_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckEmailAvailabilityIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).CheckEmailAvailability(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_CheckEmailAvailability_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).CheckEmailAvailability(ctx, req.(*CheckEmailAvailabilityIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -120,6 +154,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthService_Login_Handler,
+		},
+		{
+			MethodName: "CheckEmailAvailability",
+			Handler:    _AuthService_CheckEmailAvailability_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

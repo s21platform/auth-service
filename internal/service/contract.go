@@ -1,7 +1,13 @@
 //go:generate mockgen -destination=mock_contract_test.go -package=${GOPACKAGE} -source=contract.go
 package service
 
-import "context"
+import (
+	"context"
+)
+
+type DBRepo interface {
+	IsEmailAvailable(ctx context.Context, email string) (bool, error)
+}
 
 type SchoolS interface {
 	DoLogin(ctx context.Context, email, password string) (string, error)
