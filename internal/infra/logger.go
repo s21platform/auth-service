@@ -3,9 +3,11 @@ package infra
 import (
 	"context"
 
-	"github.com/s21platform/auth-service/internal/config"
-	logger_lib "github.com/s21platform/logger-lib"
 	"google.golang.org/grpc"
+
+	logger_lib "github.com/s21platform/logger-lib"
+
+	"github.com/s21platform/auth-service/internal/config"
 )
 
 func Logger(logger *logger_lib.Logger) func(context.Context, interface{}, *grpc.UnaryServerInfo, grpc.UnaryHandler) (interface{}, error) {

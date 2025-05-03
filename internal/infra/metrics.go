@@ -5,9 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/s21platform/auth-service/internal/config"
-	"github.com/s21platform/metrics-lib/pkg"
 	"google.golang.org/grpc"
+
+	"github.com/s21platform/metrics-lib/pkg"
+
+	"github.com/s21platform/auth-service/internal/config"
 )
 
 func MetricsInterceptor(metrics *pkg.Metrics) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,

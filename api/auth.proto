@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "pkg/auth";
+
+// Service for auth processes
+service AuthService {
+    // Login method for requesting access token from edu platform
+    rpc Login (LoginRequest) returns (LoginResponse) {};
+}
+
+
+// Data for request JWT token for all access in our platform
+message LoginRequest {
+    // username can be just nickname or full email (nickanme@student.21-school.ru)
+    string username = 1;
+    // password from platform
+    string password = 2;
+}
+
+// response JWT token for access
+message LoginResponse {
+    // String with jwt 
+    string jwt = 1;
+}
