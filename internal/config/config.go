@@ -7,13 +7,15 @@ import (
 )
 
 type Config struct {
-	Service   Service
-	School    School
-	Community Community
-	User      User
-	Platform  Platform
-	Metrics   Metrics
-	Logger    Logger
+	Service      Service
+	School       School
+	Community    Community
+	User         User
+	Notification Notification
+	Postgres     Postgres
+	Platform     Platform
+	Metrics      Metrics
+	Logger       Logger
 }
 
 type Service struct {
@@ -35,6 +37,19 @@ type School struct {
 type User struct {
 	Host string `env:"USER_SERVICE_HOST"`
 	Port string `env:"USER_SERVICE_PORT"`
+}
+
+type Notification struct {
+	Host string `env:"NOTIFICATION_SERVICE_HOST"`
+	Port string `env:"NOTIFICATION_SERVICE_PORT"`
+}
+
+type Postgres struct {
+	User     string `env:"AUTH_SERVICE_POSTGRES_USER"`
+	Password string `env:"AUTH_SERVICE_POSTGRES_PASSWORD"`
+	Database string `env:"AUTH_SERVICE_POSTGRES_DB"`
+	Host     string `env:"AUTH_SERVICE_POSTGRES_HOST"`
+	Port     string `env:"AUTH_SERVICE_POSTGRES_PORT"`
 }
 
 type Metrics struct {

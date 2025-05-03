@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/s21platform/auth-service/internal/client/notification"
 	"log"
 	"net"
 
@@ -33,8 +34,9 @@ func main() {
 	schoolClient := school.MustConnect(cfg)
 	communityClient := community.MustConnect(cfg)
 	userClient := user.MustConnect(cfg)
+	notificationClient := notification.New(cfg)
 
-	authService := service.New(schoolClient, communityClient, userClient, cfg.Service.Secret)
+	authService := service.New(schoolClient, communityClient, userClient, cfg.Service.Secret, notificationClient)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),

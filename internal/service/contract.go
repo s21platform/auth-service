@@ -14,3 +14,11 @@ type CommunityS interface {
 type UserS interface {
 	GetOrSetUser(ctx context.Context, email string) (string, error)
 }
+
+type NotificationC interface {
+	SendVerificationCode(ctx context.Context, email string, code string) error
+}
+
+type DbRepo interface {
+	PendingRegistration(ctx context.Context, email string, code string) (string, error)
+}

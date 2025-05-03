@@ -6,6 +6,8 @@
 - [api/auth.proto](#api_auth-proto)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
+    - [SendCodeIn](#-SendCodeIn)
+    - [SendCodeOut](#-SendCodeOut)
   
     - [AuthService](#-AuthService)
   
@@ -50,6 +52,36 @@ response JWT token for access
 
 
 
+
+<a name="-SendCodeIn"></a>
+
+### SendCodeIn
+Data for save in pending table
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  | email to send code |
+
+
+
+
+
+
+<a name="-SendCodeOut"></a>
+
+### SendCodeOut
+Response for SendCode
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID of record from pending table |
+
+
+
+
+
  
 
  
@@ -65,6 +97,7 @@ Service for auth processes
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
+| SendCode | [.SendCodeIn](#SendCodeIn) | [.SendCodeOut](#SendCodeOut) | Send verification code to email and save data into pending table |
 
  
 

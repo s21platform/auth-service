@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -21,15 +22,19 @@ type Service struct {
 	communityS CommunityS
 	schoolS    SchoolS
 	userS      UserS
+	nC         NotificationC
+	dbR        DbRepo
 	secret     string
 }
 
-func New(schoolService SchoolS, communityService CommunityS, userS UserS, secret string) *Service {
+func New(schoolService SchoolS, communityService CommunityS, userS UserS, secret string, nC NotificationC, dbR DbRepo) *Service {
 	return &Service{
 		schoolS:    schoolService,
 		communityS: communityService,
 		userS:      userS,
 		secret:     secret,
+		nC:         nC,
+		dbR:        dbR,
 	}
 }
 
@@ -82,4 +87,24 @@ func (s *Service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 		return nil, err
 	}
 	return &auth.LoginResponse{Jwt: tokenString}, nil
+}
+
+func (s *Service) SendCode(ctx context.Context, in *auth.SendCodeIn) (*auth.SendCodeOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("SendCode")
+
+	rand.Seed(time.Now().UnixNano())
+	code := rand.Intn(1000000)
+
+	err := s.nC.SendVerificationCode(ctx, in.Email, fmt.Sprintf("%06d", code))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Ошибка")
+	}
+	uuid, err := s.dbR.PendingRegistration(ctx, in.Email, fmt.Sprintf("%06d", code))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Ошибка")
+	}
+	return &auth.SendCodeOut{
+		Uuid: uuid,
+	}, nil
 }
