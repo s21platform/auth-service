@@ -200,17 +200,16 @@ func TestService_CheckEmailAvailability(t *testing.T) {
 		email := ""
 
 		mockLogger.EXPECT().AddFuncName("CheckEmailAvailability")
+		mockLogger.EXPECT().Error("email is required")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
-
-		mockRepo.EXPECT().IsEmailAvailable(gomock.Any(), email).Return(true, nil)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, secret)
 		result, err := s.CheckEmailAvailability(ctx, &auth.CheckEmailAvailabilityIn{
 			Email: email,
 		})
 
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.True(t, result.IsAvailable)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "email is required")
+		assert.Nil(t, result)
 	})
 }

@@ -92,6 +92,11 @@ func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmai
 
 	// todo добавить rate limiter
 
+	if in.Email == "" {
+		logger.Error("email is required")
+		return nil, fmt.Errorf("email is required")
+	}
+
 	in.Email = strings.ToLower(in.Email)
 	isAvailable, err := s.repository.IsEmailAvailable(ctx, in.Email)
 	if err != nil {
