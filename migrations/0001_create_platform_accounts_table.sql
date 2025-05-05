@@ -1,8 +1,7 @@
 -- +goose Up
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS platform_accounts
 (
-    user_uuid           UUID PRIMARY KEY             DEFAULT gen_random_uuid(),
+    user_uuid           UUID PRIMARY KEY,
     nickname            VARCHAR(64) UNIQUE,
     email               VARCHAR(255) UNIQUE NOT NULL,
     password_hash       VARCHAR(255)        NOT NULL,
@@ -17,4 +16,3 @@ CREATE TABLE IF NOT EXISTS platform_accounts
 
 -- +goose Down
 DROP TABLE IF EXISTS platform_accounts;
-DROP EXTENSION IF EXISTS pgcrypto;
