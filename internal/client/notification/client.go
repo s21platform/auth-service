@@ -3,11 +3,13 @@ package notification
 import (
 	"context"
 	"fmt"
-	"github.com/s21platform/auth-service/internal/config"
-	"github.com/s21platform/notification-service/pkg/notification"
+	"log"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
+
+	"github.com/s21platform/auth-service/internal/config"
+	"github.com/s21platform/notification-service/pkg/notification"
 )
 
 type Client struct {
@@ -23,7 +25,7 @@ func New(cfg *config.Config) *Client {
 	return &Client{client: client}
 }
 
-func (c *Client) SendVerificationCode(ctx context.Context, email string, code string) error {
+func (c *Client) SendVerificationCode(ctx context.Context, email, code string) error {
 	_, err := c.client.SendVerificationCode(ctx, &notification.SendVerificationCodeIn{
 		Email: email,
 		Code:  code,
@@ -31,5 +33,6 @@ func (c *Client) SendVerificationCode(ctx context.Context, email string, code st
 	if err != nil {
 		return fmt.Errorf("failed to call notification service: %v", err)
 	}
+
 	return nil
 }

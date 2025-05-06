@@ -8,9 +8,8 @@ service AuthService {
     rpc Login (LoginRequest) returns (LoginResponse) {};
     rpc CheckEmailAvailability(CheckEmailAvailabilityIn) returns (CheckEmailAvailabilityOut) {};
     // Send verification code to email and save data into pending table
-    rpc SendCode (SendCodeIn) returns (SendCodeOut) {};
+    rpc AddPendingUser (AddPendingUserIn) returns (AddPendingUserOut) {};
 }
-
 
 // Data for request JWT token for all access in our platform
 message LoginRequest {
@@ -31,17 +30,17 @@ message CheckEmailAvailabilityIn {
 }
 
 message CheckEmailAvailabilityOut {
-    bool isAvailable = 1;
+    bool is_available = 1;
 }
 
 // Data for save in pending table
-message SendCodeIn {
+message AddPendingUserIn {
     // email to send code
     string email = 1;
 }
 
 // Response for SendCode
-message SendCodeOut {
+message AddPendingUserOut {
     // UUID of record from pending table
     string uuid = 1;
 }

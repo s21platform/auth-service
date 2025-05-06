@@ -4,6 +4,8 @@
 ## Table of Contents
 
 - [api/auth.proto](#api_auth-proto)
+    - [AddPendingUserIn](#-AddPendingUserIn)
+    - [AddPendingUserOut](#-AddPendingUserOut)
     - [CheckEmailAvailabilityIn](#-CheckEmailAvailabilityIn)
     - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
@@ -19,6 +21,36 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/auth.proto
+
+
+
+<a name="-AddPendingUserIn"></a>
+
+### AddPendingUserIn
+Data for save in pending table
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  | email to send code |
+
+
+
+
+
+
+<a name="-AddPendingUserOut"></a>
+
+### AddPendingUserOut
+Response for SendCode
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID of record from pending table |
+
+
+
 
 
 
@@ -45,7 +77,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| isAvailable | [bool](#bool) |  |  |
+| is_available | [bool](#bool) |  |  |
 
 
 
@@ -98,6 +130,7 @@ Service for auth processes
 | ----------- | ------------ | ------------- | ------------|
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
 | CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
+| AddPendingUser | [.AddPendingUserIn](#AddPendingUserIn) | [.AddPendingUserOut](#AddPendingUserOut) | Send verification code to email and save data into pending table |
 
  
 

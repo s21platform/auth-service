@@ -34,6 +34,21 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
+// AddPending mocks base method.
+func (m *MockDBRepo) AddPending(ctx context.Context, email, code string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddPending", ctx, email, code)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddPending indicates an expected call of AddPending.
+func (mr *MockDBRepoMockRecorder) AddPending(ctx, email, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPending", reflect.TypeOf((*MockDBRepo)(nil).AddPending), ctx, email, code)
+}
+
 // IsEmailAvailable mocks base method.
 func (m *MockDBRepo) IsEmailAvailable(ctx context.Context, email string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -161,4 +176,41 @@ func (m *MockUserS) GetOrSetUser(ctx context.Context, email string) (string, err
 func (mr *MockUserSMockRecorder) GetOrSetUser(ctx, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrSetUser", reflect.TypeOf((*MockUserS)(nil).GetOrSetUser), ctx, email)
+}
+
+// MockNotificationS is a mock of NotificationS interface.
+type MockNotificationS struct {
+	ctrl     *gomock.Controller
+	recorder *MockNotificationSMockRecorder
+}
+
+// MockNotificationSMockRecorder is the mock recorder for MockNotificationS.
+type MockNotificationSMockRecorder struct {
+	mock *MockNotificationS
+}
+
+// NewMockNotificationS creates a new mock instance.
+func NewMockNotificationS(ctrl *gomock.Controller) *MockNotificationS {
+	mock := &MockNotificationS{ctrl: ctrl}
+	mock.recorder = &MockNotificationSMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockNotificationS) EXPECT() *MockNotificationSMockRecorder {
+	return m.recorder
+}
+
+// SendVerificationCode mocks base method.
+func (m *MockNotificationS) SendVerificationCode(ctx context.Context, email, code string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendVerificationCode", ctx, email, code)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendVerificationCode indicates an expected call of SendVerificationCode.
+func (mr *MockNotificationSMockRecorder) SendVerificationCode(ctx, email, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendVerificationCode", reflect.TypeOf((*MockNotificationS)(nil).SendVerificationCode), ctx, email, code)
 }

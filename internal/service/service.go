@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strings"
 	"time"
 
@@ -19,22 +20,22 @@ import (
 
 type Service struct {
 	auth.UnimplementedAuthServiceServer
-	repository DBRepo
-	schoolS    SchoolS
-	communityS CommunityS
-	userS      UserS
-	nC         NotificationC
-	secret     string
+	repository    DBRepo
+	schoolS       SchoolS
+	communityS    CommunityS
+	notificationS NotificationS
+	userS         UserS
+	secret        string
 }
 
-func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userS UserS, secret string, nC NotificationC) *Service {
+func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userService UserS, notificationService NotificationS, secret string) *Service {
 	return &Service{
-		repository: repository,
-		schoolS:    schoolService,
-		communityS: communityService,
-		userS:      userS,
-		secret:     secret,
-		nC:         nC,
+		repository:    repository,
+		schoolS:       schoolService,
+		communityS:    communityService,
+		userS:         userService,
+		secret:        secret,
+		notificationS: notificationService,
 	}
 }
 
@@ -110,22 +111,33 @@ func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmai
 	return &auth.CheckEmailAvailabilityOut{IsAvailable: isAvailable}, nil
 }
 
-func (s *Service) SendCode(ctx context.Context, in *auth.SendCodeIn) (*auth.SendCodeOut, error) {
+func (s *Service) AddPendingUser(ctx context.Context, in *auth.AddPendingUserIn) (*auth.AddPendingUserOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("SendCode")
+	logger.AddFuncName("AddPendingUser")
 
-	rand.Seed(time.Now().UnixNano())
-	code := rand.Intn(1000000)
+	// todo добавить rate limiter
 
-	err := s.nC.SendVerificationCode(ctx, in.Email, fmt.Sprintf("%06d", code))
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Ошибка")
+	if in.Email == "" {
+		logger.Error("email is required")
+		return nil, status.Errorf(codes.InvalidArgument, "email is required")
 	}
-	uuid, err := s.repository.PendingRegistration(ctx, in.Email, fmt.Sprintf("%06d", code))
+	in.Email = strings.ToLower(in.Email)
+
+	codeInt, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Ошибка")
+		return nil, status.Errorf(codes.Internal, "failed to generate code: %v", err)
 	}
-	return &auth.SendCodeOut{
-		Uuid: uuid,
-	}, nil
+	code := fmt.Sprintf("%06d", codeInt)
+
+	err = s.notificationS.SendVerificationCode(ctx, in.Email, code)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to send code: %v", err)
+	}
+
+	uuid, err := s.repository.AddPending(ctx, in.Email, code)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to add user to pending table: %v", err)
+	}
+
+	return &auth.AddPendingUserOut{Uuid: uuid}, nil
 }

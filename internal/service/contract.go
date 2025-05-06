@@ -7,6 +7,7 @@ import (
 
 type DBRepo interface {
 	IsEmailAvailable(ctx context.Context, email string) (bool, error)
+	AddPending(ctx context.Context, email, code string) (string, error)
 }
 
 type SchoolS interface {
@@ -21,10 +22,6 @@ type UserS interface {
 	GetOrSetUser(ctx context.Context, email string) (string, error)
 }
 
-type NotificationC interface {
-	SendVerificationCode(ctx context.Context, email string, code string) error
-}
-
-type DbRepo interface {
-	PendingRegistration(ctx context.Context, email string, code string) (string, error)
+type NotificationS interface {
+	SendVerificationCode(ctx context.Context, email, code string) error
 }
