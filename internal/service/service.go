@@ -19,22 +19,22 @@ import (
 
 type Service struct {
 	auth.UnimplementedAuthServiceServer
-	communityS CommunityS
+	repository DBRepo
 	schoolS    SchoolS
+	communityS CommunityS
 	userS      UserS
 	nC         NotificationC
-	dbR        DbRepo
 	secret     string
 }
 
-func New(schoolService SchoolS, communityService CommunityS, userS UserS, secret string, nC NotificationC, dbR DbRepo) *Service {
+func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userS UserS, secret string, nC NotificationC) *Service {
 	return &Service{
+		repository: repository,
 		schoolS:    schoolService,
 		communityS: communityService,
 		userS:      userS,
 		secret:     secret,
 		nC:         nC,
-		dbR:        dbR,
 	}
 }
 
@@ -89,6 +89,27 @@ func (s *Service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 	return &auth.LoginResponse{Jwt: tokenString}, nil
 }
 
+func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmailAvailabilityIn) (*auth.CheckEmailAvailabilityOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("CheckEmailAvailability")
+
+	// todo добавить rate limiter
+
+	if in.Email == "" {
+		logger.Error("email is required")
+		return nil, fmt.Errorf("email is required")
+	}
+
+	in.Email = strings.ToLower(in.Email)
+	isAvailable, err := s.repository.IsEmailAvailable(ctx, in.Email)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check email: %v", err))
+		return nil, err
+	}
+
+	return &auth.CheckEmailAvailabilityOut{IsAvailable: isAvailable}, nil
+}
+
 func (s *Service) SendCode(ctx context.Context, in *auth.SendCodeIn) (*auth.SendCodeOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("SendCode")
@@ -100,7 +121,7 @@ func (s *Service) SendCode(ctx context.Context, in *auth.SendCodeIn) (*auth.Send
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Ошибка")
 	}
-	uuid, err := s.dbR.PendingRegistration(ctx, in.Email, fmt.Sprintf("%06d", code))
+	uuid, err := s.repository.PendingRegistration(ctx, in.Email, fmt.Sprintf("%06d", code))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Ошибка")
 	}

@@ -24,6 +24,14 @@ type Service struct {
 	Name   string `env:"AUTH_SERVICE_NAME"`
 }
 
+type Postgres struct {
+	User     string `env:"AUTH_SERVICE_POSTGRES_USER"`
+	Password string `env:"AUTH_SERVICE_POSTGRES_PASSWORD"`
+	Database string `env:"AUTH_SERVICE_POSTGRES_DB"`
+	Host     string `env:"AUTH_SERVICE_POSTGRES_HOST"`
+	Port     string `env:"AUTH_SERVICE_POSTGRES_PORT"`
+}
+
 type Community struct {
 	Host string `env:"COMMUNITY_SERVICE_HOST"`
 	Port string `env:"COMMUNITY_SERVICE_PORT"`
@@ -42,14 +50,6 @@ type User struct {
 type Notification struct {
 	Host string `env:"NOTIFICATION_SERVICE_HOST"`
 	Port string `env:"NOTIFICATION_SERVICE_PORT"`
-}
-
-type Postgres struct {
-	User     string `env:"AUTH_SERVICE_POSTGRES_USER"`
-	Password string `env:"AUTH_SERVICE_POSTGRES_PASSWORD"`
-	Database string `env:"AUTH_SERVICE_POSTGRES_DB"`
-	Host     string `env:"AUTH_SERVICE_POSTGRES_HOST"`
-	Port     string `env:"AUTH_SERVICE_POSTGRES_PORT"`
 }
 
 type Metrics struct {

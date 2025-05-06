@@ -6,6 +6,7 @@ option go_package = "pkg/auth";
 service AuthService {
     // Login method for requesting access token from edu platform
     rpc Login (LoginRequest) returns (LoginResponse) {};
+    rpc CheckEmailAvailability(CheckEmailAvailabilityIn) returns (CheckEmailAvailabilityOut) {};
     // Send verification code to email and save data into pending table
     rpc SendCode (SendCodeIn) returns (SendCodeOut) {};
 }
@@ -21,8 +22,16 @@ message LoginRequest {
 
 // response JWT token for access
 message LoginResponse {
-    // String with jwt 
+    // String with jwt
     string jwt = 1;
+}
+
+message CheckEmailAvailabilityIn {
+    string email = 1;
+}
+
+message CheckEmailAvailabilityOut {
+    bool isAvailable = 1;
 }
 
 // Data for save in pending table

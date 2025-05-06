@@ -3,35 +3,58 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
+
 	"github.com/s21platform/auth-service/internal/config"
-	"log"
 )
 
-type Repo struct {
-	conn *sqlx.DB
+type Repository struct {
+	connection *sqlx.DB
 }
 
-func New(cfg *config.Config) *Repo {
+func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
 
 	conn, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
-		log.Fatal("error connect: ", err)
+		log.Fatal("failed to connect: ", err)
 	}
 
-	if err := conn.Ping(); err != nil {
-		log.Fatal("error ping: ", err)
-	}
-	return &Repo{
-		conn: conn,
+	return &Repository{
+		connection: conn,
 	}
 }
 
-func (r *Repo) PendingRegistration(ctx context.Context, email string, code string) (string, error) {
+func (r *Repository) Close() {
+	_ = r.connection.Close()
+}
+
+func (r *Repository) IsEmailAvailable(ctx context.Context, email string) (bool, error) {
+	query, args, err := sq.
+		Select("COUNT(*)").
+		From("platform_accounts").
+		Where(sq.Eq{"email": email}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build query: %v", err)
+	}
+
+	var count int
+	err = r.connection.GetContext(ctx, &count, query, args...)
+	if err != nil {
+		return false, fmt.Errorf("failed to check email availability: %v", err)
+	}
+
+	return count == 0, nil
+}
+
+func (r *Repository) PendingRegistration(ctx context.Context, email string, code string) (string, error) {
 	query, args, err := sq.
 		Insert(`pending_registrations`).
 		Columns(`email`, `verification_code`).
@@ -45,7 +68,7 @@ func (r *Repo) PendingRegistration(ctx context.Context, email string, code strin
 	}
 
 	var uuid string
-	err = r.conn.QueryRowContext(ctx, query, args...).Scan(&uuid)
+	err = r.connection.QueryRowContext(ctx, query, args...).Scan(&uuid)
 	if err != nil {
 		return "", fmt.Errorf("failed to execute sql query: %v", err)
 	}

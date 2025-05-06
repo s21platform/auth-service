@@ -4,10 +4,10 @@
 ## Table of Contents
 
 - [api/auth.proto](#api_auth-proto)
+    - [CheckEmailAvailabilityIn](#-CheckEmailAvailabilityIn)
+    - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
-    - [SendCodeIn](#-SendCodeIn)
-    - [SendCodeOut](#-SendCodeOut)
   
     - [AuthService](#-AuthService)
   
@@ -19,6 +19,36 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/auth.proto
+
+
+
+<a name="-CheckEmailAvailabilityIn"></a>
+
+### CheckEmailAvailabilityIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-CheckEmailAvailabilityOut"></a>
+
+### CheckEmailAvailabilityOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| isAvailable | [bool](#bool) |  |  |
+
+
+
 
 
 
@@ -52,36 +82,6 @@ response JWT token for access
 
 
 
-
-<a name="-SendCodeIn"></a>
-
-### SendCodeIn
-Data for save in pending table
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| email | [string](#string) |  | email to send code |
-
-
-
-
-
-
-<a name="-SendCodeOut"></a>
-
-### SendCodeOut
-Response for SendCode
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) |  | UUID of record from pending table |
-
-
-
-
-
  
 
  
@@ -97,7 +97,7 @@ Service for auth processes
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
-| SendCode | [.SendCodeIn](#SendCodeIn) | [.SendCodeOut](#SendCodeOut) | Send verification code to email and save data into pending table |
+| CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
 
  
 
