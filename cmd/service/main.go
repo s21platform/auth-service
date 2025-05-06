@@ -15,6 +15,7 @@ import (
 	"github.com/s21platform/auth-service/internal/client/user"
 	"github.com/s21platform/auth-service/internal/config"
 	"github.com/s21platform/auth-service/internal/infra"
+	"github.com/s21platform/auth-service/internal/repository/postgres"
 	"github.com/s21platform/auth-service/internal/service"
 	"github.com/s21platform/auth-service/pkg/auth"
 )
@@ -30,11 +31,14 @@ func main() {
 	}
 	defer metrics.Disconnect()
 
+	dbRepo := postgres.New(cfg)
+	defer dbRepo.Close()
+
 	schoolClient := school.MustConnect(cfg)
 	communityClient := community.MustConnect(cfg)
 	userClient := user.MustConnect(cfg)
 
-	authService := service.New(schoolClient, communityClient, userClient, cfg.Service.Secret)
+	authService := service.New(dbRepo, schoolClient, communityClient, userClient, cfg.Service.Secret)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),

@@ -4,6 +4,8 @@
 ## Table of Contents
 
 - [api/auth.proto](#api_auth-proto)
+    - [CheckEmailAvailabilityIn](#-CheckEmailAvailabilityIn)
+    - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
   
@@ -17,6 +19,36 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/auth.proto
+
+
+
+<a name="-CheckEmailAvailabilityIn"></a>
+
+### CheckEmailAvailabilityIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-CheckEmailAvailabilityOut"></a>
+
+### CheckEmailAvailabilityOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| isAvailable | [bool](#bool) |  |  |
+
+
+
 
 
 
@@ -65,6 +97,7 @@ Service for auth processes
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
+| CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
 
  
 
