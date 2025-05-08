@@ -54,7 +54,7 @@ func (r *Repository) IsEmailAvailable(ctx context.Context, email string) (bool, 
 	return count == 0, nil
 }
 
-func (r *Repository) AddPending(ctx context.Context, email, code string) (string, error) {
+func (r *Repository) InsertPendingRegistration(ctx context.Context, email, code string) (string, error) {
 	query, args, err := sq.
 		Insert("pending_registrations").
 		Columns("email", "verification_code").

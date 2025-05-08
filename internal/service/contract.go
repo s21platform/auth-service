@@ -7,7 +7,7 @@ import (
 
 type DBRepo interface {
 	IsEmailAvailable(ctx context.Context, email string) (bool, error)
-	AddPending(ctx context.Context, email, code string) (string, error)
+	InsertPendingRegistration(ctx context.Context, email, code string) (string, error)
 }
 
 type SchoolS interface {

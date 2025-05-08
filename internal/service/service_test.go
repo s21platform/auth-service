@@ -216,7 +216,7 @@ func TestService_CheckEmailAvailability(t *testing.T) {
 	})
 }
 
-func TestService_AddPendingUser(t *testing.T) {
+func TestService_SendUserVerificationCode(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
@@ -237,15 +237,15 @@ func TestService_AddPendingUser(t *testing.T) {
 		email := "test@example.com"
 		expectedUUID := "test-uuid"
 
-		mockLogger.EXPECT().AddFuncName("AddPendingUser")
+		mockLogger.EXPECT().AddFuncName("SendUserVerificationCode")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
 		mockNotificationS.EXPECT().SendVerificationCode(gomock.Any(), email, gomock.Any()).Return(nil)
 
-		mockRepo.EXPECT().AddPending(gomock.Any(), email, gomock.Any()).Return(expectedUUID, nil)
+		mockRepo.EXPECT().InsertPendingRegistration(gomock.Any(), email, gomock.Any()).Return(expectedUUID, nil)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, secret)
-		result, err := s.AddPendingUser(ctx, &auth.AddPendingUserIn{
+		result, err := s.SendUserVerificationCode(ctx, &auth.SendUserVerificationCodeIn{
 			Email: email,
 		})
 
@@ -259,15 +259,15 @@ func TestService_AddPendingUser(t *testing.T) {
 		lowerEmail := "test@example.com"
 		expectedUUID := "test-uuid"
 
-		mockLogger.EXPECT().AddFuncName("AddPendingUser")
+		mockLogger.EXPECT().AddFuncName("SendUserVerificationCode")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
 		mockNotificationS.EXPECT().SendVerificationCode(gomock.Any(), lowerEmail, gomock.Any()).Return(nil)
 
-		mockRepo.EXPECT().AddPending(gomock.Any(), lowerEmail, gomock.Any()).Return(expectedUUID, nil)
+		mockRepo.EXPECT().InsertPendingRegistration(gomock.Any(), lowerEmail, gomock.Any()).Return(expectedUUID, nil)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, secret)
-		result, err := s.AddPendingUser(ctx, &auth.AddPendingUserIn{
+		result, err := s.SendUserVerificationCode(ctx, &auth.SendUserVerificationCodeIn{
 			Email: email,
 		})
 
@@ -279,12 +279,12 @@ func TestService_AddPendingUser(t *testing.T) {
 	t.Run("should_handle_empty_email", func(t *testing.T) {
 		email := ""
 
-		mockLogger.EXPECT().AddFuncName("AddPendingUser")
+		mockLogger.EXPECT().AddFuncName("SendUserVerificationCode")
 		mockLogger.EXPECT().Error("email is required")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, secret)
-		result, err := s.AddPendingUser(ctx, &auth.AddPendingUserIn{
+		result, err := s.SendUserVerificationCode(ctx, &auth.SendUserVerificationCodeIn{
 			Email: email,
 		})
 
@@ -297,13 +297,13 @@ func TestService_AddPendingUser(t *testing.T) {
 		email := "test@example.com"
 		expectedErr := errors.New("notification service error")
 
-		mockLogger.EXPECT().AddFuncName("AddPendingUser")
+		mockLogger.EXPECT().AddFuncName("SendUserVerificationCode")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
 		mockNotificationS.EXPECT().SendVerificationCode(gomock.Any(), email, gomock.Any()).Return(expectedErr)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, secret)
-		result, err := s.AddPendingUser(ctx, &auth.AddPendingUserIn{
+		result, err := s.SendUserVerificationCode(ctx, &auth.SendUserVerificationCodeIn{
 			Email: email,
 		})
 
@@ -316,15 +316,15 @@ func TestService_AddPendingUser(t *testing.T) {
 		email := "test@example.com"
 		expectedErr := errors.New("database error")
 
-		mockLogger.EXPECT().AddFuncName("AddPendingUser")
+		mockLogger.EXPECT().AddFuncName("SendUserVerificationCode")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
 		mockNotificationS.EXPECT().SendVerificationCode(gomock.Any(), email, gomock.Any()).Return(nil)
 
-		mockRepo.EXPECT().AddPending(gomock.Any(), email, gomock.Any()).Return("", expectedErr)
+		mockRepo.EXPECT().InsertPendingRegistration(gomock.Any(), email, gomock.Any()).Return("", expectedErr)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, secret)
-		result, err := s.AddPendingUser(ctx, &auth.AddPendingUserIn{
+		result, err := s.SendUserVerificationCode(ctx, &auth.SendUserVerificationCodeIn{
 			Email: email,
 		})
 

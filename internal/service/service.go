@@ -111,9 +111,9 @@ func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmai
 	return &auth.CheckEmailAvailabilityOut{IsAvailable: isAvailable}, nil
 }
 
-func (s *Service) AddPendingUser(ctx context.Context, in *auth.AddPendingUserIn) (*auth.AddPendingUserOut, error) {
+func (s *Service) SendUserVerificationCode(ctx context.Context, in *auth.SendUserVerificationCodeIn) (*auth.SendUserVerificationCodeOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("AddPendingUser")
+	logger.AddFuncName("SendUserVerificationCode")
 
 	// todo добавить rate limiter
 
@@ -134,10 +134,10 @@ func (s *Service) AddPendingUser(ctx context.Context, in *auth.AddPendingUserIn)
 		return nil, status.Errorf(codes.Internal, "failed to send code: %v", err)
 	}
 
-	uuid, err := s.repository.AddPending(ctx, in.Email, code)
+	uuid, err := s.repository.InsertPendingRegistration(ctx, in.Email, code)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to add user to pending table: %v", err)
 	}
 
-	return &auth.AddPendingUserOut{Uuid: uuid}, nil
+	return &auth.SendUserVerificationCodeOut{Uuid: uuid}, nil
 }

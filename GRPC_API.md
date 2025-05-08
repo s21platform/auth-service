@@ -4,12 +4,12 @@
 ## Table of Contents
 
 - [api/auth.proto](#api_auth-proto)
-    - [AddPendingUserIn](#-AddPendingUserIn)
-    - [AddPendingUserOut](#-AddPendingUserOut)
     - [CheckEmailAvailabilityIn](#-CheckEmailAvailabilityIn)
     - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
+    - [SendUserVerificationCodeIn](#-SendUserVerificationCodeIn)
+    - [SendUserVerificationCodeOut](#-SendUserVerificationCodeOut)
   
     - [AuthService](#-AuthService)
   
@@ -21,36 +21,6 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/auth.proto
-
-
-
-<a name="-AddPendingUserIn"></a>
-
-### AddPendingUserIn
-Data for save in pending table
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| email | [string](#string) |  | email to send code |
-
-
-
-
-
-
-<a name="-AddPendingUserOut"></a>
-
-### AddPendingUserOut
-Response for SendCode
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) |  | UUID of record from pending table |
-
-
-
 
 
 
@@ -114,6 +84,36 @@ response JWT token for access
 
 
 
+
+<a name="-SendUserVerificationCodeIn"></a>
+
+### SendUserVerificationCodeIn
+Data for save in pending table
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  | email to send code |
+
+
+
+
+
+
+<a name="-SendUserVerificationCodeOut"></a>
+
+### SendUserVerificationCodeOut
+Response for SendCode
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID of record from pending table |
+
+
+
+
+
  
 
  
@@ -130,7 +130,7 @@ Service for auth processes
 | ----------- | ------------ | ------------- | ------------|
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
 | CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
-| AddPendingUser | [.AddPendingUserIn](#AddPendingUserIn) | [.AddPendingUserOut](#AddPendingUserOut) | Send verification code to email and save data into pending table |
+| SendUserVerificationCode | [.SendUserVerificationCodeIn](#SendUserVerificationCodeIn) | [.SendUserVerificationCodeOut](#SendUserVerificationCodeOut) | Send verification code to email and save data into pending table |
 
  
 

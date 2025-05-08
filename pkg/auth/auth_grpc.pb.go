@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Login_FullMethodName                  = "/AuthService/Login"
-	AuthService_CheckEmailAvailability_FullMethodName = "/AuthService/CheckEmailAvailability"
-	AuthService_AddPendingUser_FullMethodName         = "/AuthService/AddPendingUser"
+	AuthService_Login_FullMethodName                    = "/AuthService/Login"
+	AuthService_CheckEmailAvailability_FullMethodName   = "/AuthService/CheckEmailAvailability"
+	AuthService_SendUserVerificationCode_FullMethodName = "/AuthService/SendUserVerificationCode"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -34,7 +34,7 @@ type AuthServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CheckEmailAvailability(ctx context.Context, in *CheckEmailAvailabilityIn, opts ...grpc.CallOption) (*CheckEmailAvailabilityOut, error)
 	// Send verification code to email and save data into pending table
-	AddPendingUser(ctx context.Context, in *AddPendingUserIn, opts ...grpc.CallOption) (*AddPendingUserOut, error)
+	SendUserVerificationCode(ctx context.Context, in *SendUserVerificationCodeIn, opts ...grpc.CallOption) (*SendUserVerificationCodeOut, error)
 }
 
 type authServiceClient struct {
@@ -65,10 +65,10 @@ func (c *authServiceClient) CheckEmailAvailability(ctx context.Context, in *Chec
 	return out, nil
 }
 
-func (c *authServiceClient) AddPendingUser(ctx context.Context, in *AddPendingUserIn, opts ...grpc.CallOption) (*AddPendingUserOut, error) {
+func (c *authServiceClient) SendUserVerificationCode(ctx context.Context, in *SendUserVerificationCodeIn, opts ...grpc.CallOption) (*SendUserVerificationCodeOut, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddPendingUserOut)
-	err := c.cc.Invoke(ctx, AuthService_AddPendingUser_FullMethodName, in, out, cOpts...)
+	out := new(SendUserVerificationCodeOut)
+	err := c.cc.Invoke(ctx, AuthService_SendUserVerificationCode_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ type AuthServiceServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	CheckEmailAvailability(context.Context, *CheckEmailAvailabilityIn) (*CheckEmailAvailabilityOut, error)
 	// Send verification code to email and save data into pending table
-	AddPendingUser(context.Context, *AddPendingUserIn) (*AddPendingUserOut, error)
+	SendUserVerificationCode(context.Context, *SendUserVerificationCodeIn) (*SendUserVerificationCodeOut, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -102,8 +102,8 @@ func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*Lo
 func (UnimplementedAuthServiceServer) CheckEmailAvailability(context.Context, *CheckEmailAvailabilityIn) (*CheckEmailAvailabilityOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckEmailAvailability not implemented")
 }
-func (UnimplementedAuthServiceServer) AddPendingUser(context.Context, *AddPendingUserIn) (*AddPendingUserOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddPendingUser not implemented")
+func (UnimplementedAuthServiceServer) SendUserVerificationCode(context.Context, *SendUserVerificationCodeIn) (*SendUserVerificationCodeOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendUserVerificationCode not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -162,20 +162,20 @@ func _AuthService_CheckEmailAvailability_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_AddPendingUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddPendingUserIn)
+func _AuthService_SendUserVerificationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendUserVerificationCodeIn)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).AddPendingUser(ctx, in)
+		return srv.(AuthServiceServer).SendUserVerificationCode(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AuthService_AddPendingUser_FullMethodName,
+		FullMethod: AuthService_SendUserVerificationCode_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).AddPendingUser(ctx, req.(*AddPendingUserIn))
+		return srv.(AuthServiceServer).SendUserVerificationCode(ctx, req.(*SendUserVerificationCodeIn))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -196,8 +196,8 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_CheckEmailAvailability_Handler,
 		},
 		{
-			MethodName: "AddPendingUser",
-			Handler:    _AuthService_AddPendingUser_Handler,
+			MethodName: "SendUserVerificationCode",
+			Handler:    _AuthService_SendUserVerificationCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

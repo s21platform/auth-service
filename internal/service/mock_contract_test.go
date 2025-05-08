@@ -34,19 +34,19 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
-// AddPending mocks base method.
-func (m *MockDBRepo) AddPending(ctx context.Context, email, code string) (string, error) {
+// InsertPendingRegistration mocks base method.
+func (m *MockDBRepo) InsertPendingRegistration(ctx context.Context, email, code string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPending", ctx, email, code)
+	ret := m.ctrl.Call(m, "InsertPendingRegistration", ctx, email, code)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddPending indicates an expected call of AddPending.
-func (mr *MockDBRepoMockRecorder) AddPending(ctx, email, code interface{}) *gomock.Call {
+// InsertPendingRegistration indicates an expected call of InsertPendingRegistration.
+func (mr *MockDBRepoMockRecorder) InsertPendingRegistration(ctx, email, code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPending", reflect.TypeOf((*MockDBRepo)(nil).AddPending), ctx, email, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertPendingRegistration", reflect.TypeOf((*MockDBRepo)(nil).InsertPendingRegistration), ctx, email, code)
 }
 
 // IsEmailAvailable mocks base method.
