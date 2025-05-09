@@ -12,9 +12,10 @@ require (
 	github.com/s21platform/community-proto v0.0.0-20240810113935-14f2cc500df8
 	github.com/s21platform/logger-lib v0.0.6
 	github.com/s21platform/metrics-lib v0.0.9
+	github.com/s21platform/notification-service v0.0.4
 	github.com/s21platform/school-proto v0.0.1
 	github.com/s21platform/user-service v0.0.0-20250430121303-6377875ee696
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.6
 )

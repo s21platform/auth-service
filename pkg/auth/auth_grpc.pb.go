@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Login_FullMethodName                  = "/AuthService/Login"
-	AuthService_CheckEmailAvailability_FullMethodName = "/AuthService/CheckEmailAvailability"
+	AuthService_Login_FullMethodName                    = "/AuthService/Login"
+	AuthService_CheckEmailAvailability_FullMethodName   = "/AuthService/CheckEmailAvailability"
+	AuthService_SendUserVerificationCode_FullMethodName = "/AuthService/SendUserVerificationCode"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -32,6 +33,8 @@ type AuthServiceClient interface {
 	// Login method for requesting access token from edu platform
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CheckEmailAvailability(ctx context.Context, in *CheckEmailAvailabilityIn, opts ...grpc.CallOption) (*CheckEmailAvailabilityOut, error)
+	// Send verification code to email and save data into pending table
+	SendUserVerificationCode(ctx context.Context, in *SendUserVerificationCodeIn, opts ...grpc.CallOption) (*SendUserVerificationCodeOut, error)
 }
 
 type authServiceClient struct {
@@ -62,6 +65,16 @@ func (c *authServiceClient) CheckEmailAvailability(ctx context.Context, in *Chec
 	return out, nil
 }
 
+func (c *authServiceClient) SendUserVerificationCode(ctx context.Context, in *SendUserVerificationCodeIn, opts ...grpc.CallOption) (*SendUserVerificationCodeOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendUserVerificationCodeOut)
+	err := c.cc.Invoke(ctx, AuthService_SendUserVerificationCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -71,6 +84,8 @@ type AuthServiceServer interface {
 	// Login method for requesting access token from edu platform
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	CheckEmailAvailability(context.Context, *CheckEmailAvailabilityIn) (*CheckEmailAvailabilityOut, error)
+	// Send verification code to email and save data into pending table
+	SendUserVerificationCode(context.Context, *SendUserVerificationCodeIn) (*SendUserVerificationCodeOut, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -86,6 +101,9 @@ func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*Lo
 }
 func (UnimplementedAuthServiceServer) CheckEmailAvailability(context.Context, *CheckEmailAvailabilityIn) (*CheckEmailAvailabilityOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckEmailAvailability not implemented")
+}
+func (UnimplementedAuthServiceServer) SendUserVerificationCode(context.Context, *SendUserVerificationCodeIn) (*SendUserVerificationCodeOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendUserVerificationCode not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -144,6 +162,24 @@ func _AuthService_CheckEmailAvailability_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_SendUserVerificationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendUserVerificationCodeIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SendUserVerificationCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_SendUserVerificationCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SendUserVerificationCode(ctx, req.(*SendUserVerificationCodeIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -158,6 +194,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckEmailAvailability",
 			Handler:    _AuthService_CheckEmailAvailability_Handler,
+		},
+		{
+			MethodName: "SendUserVerificationCode",
+			Handler:    _AuthService_SendUserVerificationCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

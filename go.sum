@@ -47,13 +47,15 @@ github.com/s21platform/logger-lib v0.0.6 h1:Aa3wV7zsaUSUkLa4P8stKNKxmKpZEn9dNBsk
 github.com/s21platform/logger-lib v0.0.6/go.mod h1:KjnZvBFSCUriTW9QCp9y1LAPU4gUo3m8PmWNR3Th7MI=
 github.com/s21platform/metrics-lib v0.0.9 h1:nFz4W+xps2nlxpOyGW/JLjZf2sTN/YXomumuC9nXwQ0=
 github.com/s21platform/metrics-lib v0.0.9/go.mod h1:Z1Aiy5uuyEmM//rQmhqkVh0JR8l5sVwe83TQegdNFxQ=
+github.com/s21platform/notification-service v0.0.4 h1:o0PP7tRGTqSXamz/NUniTnrdE68jCxooLL1hhkZ7TL0=
+github.com/s21platform/notification-service v0.0.4/go.mod h1:hx2tTur02F9MD9TYvoKlO1lgPlcts/h/3okGII00xfs=
 github.com/s21platform/school-proto v0.0.1 h1:sPEUmalAov6NtUaB6LV703GCyfZl6hRIH1KjWOYbYJ8=
 github.com/s21platform/school-proto v0.0.1/go.mod h1:OHdop/i6tGCF6TfX1Wgh9rcjlJaX5OK8AMD5XnBYtm8=
 github.com/s21platform/user-service v0.0.0-20250430121303-6377875ee696 h1:oLK0ahIgf7MPFOr/jHs3VJdISmoi9SjBMSdEqoChcEg=
 github.com/s21platform/user-service v0.0.0-20250430121303-6377875ee696/go.mod h1:5MzZ1R9b3HsYmEaDbIhVUMUoG9xwPjNGudDX2dtCmj0=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
-github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
-github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
+github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=

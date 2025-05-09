@@ -11,6 +11,7 @@ import (
 	"github.com/s21platform/metrics-lib/pkg"
 
 	"github.com/s21platform/auth-service/internal/client/community"
+	"github.com/s21platform/auth-service/internal/client/notification"
 	"github.com/s21platform/auth-service/internal/client/school"
 	"github.com/s21platform/auth-service/internal/client/user"
 	"github.com/s21platform/auth-service/internal/config"
@@ -37,8 +38,9 @@ func main() {
 	schoolClient := school.MustConnect(cfg)
 	communityClient := community.MustConnect(cfg)
 	userClient := user.MustConnect(cfg)
+	notificationClient := notification.New(cfg)
 
-	authService := service.New(dbRepo, schoolClient, communityClient, userClient, cfg.Service.Secret)
+	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, cfg.Service.Secret)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),

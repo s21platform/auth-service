@@ -53,3 +53,24 @@ func (r *Repository) IsEmailAvailable(ctx context.Context, email string) (bool, 
 
 	return count == 0, nil
 }
+
+func (r *Repository) InsertPendingRegistration(ctx context.Context, email, code string) (string, error) {
+	query, args, err := sq.
+		Insert("pending_registrations").
+		Columns("email", "verification_code").
+		Values(email, code).
+		Suffix("RETURNING uuid").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return "", fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	var uuid string
+	err = r.connection.GetContext(ctx, &uuid, query, args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to execute sql query: %v", err)
+	}
+
+	return uuid, nil
+}

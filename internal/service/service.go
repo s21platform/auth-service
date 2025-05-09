@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 
@@ -18,20 +20,22 @@ import (
 
 type Service struct {
 	auth.UnimplementedAuthServiceServer
-	repository DBRepo
-	schoolS    SchoolS
-	communityS CommunityS
-	userS      UserS
-	secret     string
+	repository    DBRepo
+	schoolS       SchoolS
+	communityS    CommunityS
+	notificationS NotificationS
+	userS         UserS
+	secret        string
 }
 
-func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userS UserS, secret string) *Service {
+func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userService UserS, notificationService NotificationS, secret string) *Service {
 	return &Service{
-		repository: repository,
-		schoolS:    schoolService,
-		communityS: communityService,
-		userS:      userS,
-		secret:     secret,
+		repository:    repository,
+		schoolS:       schoolService,
+		communityS:    communityService,
+		userS:         userService,
+		secret:        secret,
+		notificationS: notificationService,
 	}
 }
 
@@ -105,4 +109,35 @@ func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmai
 	}
 
 	return &auth.CheckEmailAvailabilityOut{IsAvailable: isAvailable}, nil
+}
+
+func (s *Service) SendUserVerificationCode(ctx context.Context, in *auth.SendUserVerificationCodeIn) (*auth.SendUserVerificationCodeOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("SendUserVerificationCode")
+
+	// todo добавить rate limiter
+
+	if in.Email == "" {
+		logger.Error("email is required")
+		return nil, status.Errorf(codes.InvalidArgument, "email is required")
+	}
+	in.Email = strings.ToLower(in.Email)
+
+	codeInt, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate code: %v", err)
+	}
+	code := fmt.Sprintf("%06d", codeInt)
+
+	err = s.notificationS.SendVerificationCode(ctx, in.Email, code)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to send code: %v", err)
+	}
+
+	uuid, err := s.repository.InsertPendingRegistration(ctx, in.Email, code)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to add user to pending table: %v", err)
+	}
+
+	return &auth.SendUserVerificationCodeOut{Uuid: uuid}, nil
 }

@@ -8,6 +8,8 @@
     - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
+    - [SendUserVerificationCodeIn](#-SendUserVerificationCodeIn)
+    - [SendUserVerificationCodeOut](#-SendUserVerificationCodeOut)
   
     - [AuthService](#-AuthService)
   
@@ -45,7 +47,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| isAvailable | [bool](#bool) |  |  |
+| is_available | [bool](#bool) |  |  |
 
 
 
@@ -82,6 +84,36 @@ response JWT token for access
 
 
 
+
+<a name="-SendUserVerificationCodeIn"></a>
+
+### SendUserVerificationCodeIn
+Data for save in pending table
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  | email to send code |
+
+
+
+
+
+
+<a name="-SendUserVerificationCodeOut"></a>
+
+### SendUserVerificationCodeOut
+Response for SendCode
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID of record from pending table |
+
+
+
+
+
  
 
  
@@ -98,6 +130,7 @@ Service for auth processes
 | ----------- | ------------ | ------------- | ------------|
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
 | CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
+| SendUserVerificationCode | [.SendUserVerificationCodeIn](#SendUserVerificationCodeIn) | [.SendUserVerificationCodeOut](#SendUserVerificationCodeOut) | Send verification code to email and save data into pending table |
 
  
 

@@ -7,8 +7,9 @@ service AuthService {
     // Login method for requesting access token from edu platform
     rpc Login (LoginRequest) returns (LoginResponse) {};
     rpc CheckEmailAvailability(CheckEmailAvailabilityIn) returns (CheckEmailAvailabilityOut) {};
+    // Send verification code to email and save data into pending table
+    rpc SendUserVerificationCode (SendUserVerificationCodeIn) returns (SendUserVerificationCodeOut) {};
 }
-
 
 // Data for request JWT token for all access in our platform
 message LoginRequest {
@@ -29,5 +30,17 @@ message CheckEmailAvailabilityIn {
 }
 
 message CheckEmailAvailabilityOut {
-    bool isAvailable = 1;
+    bool is_available = 1;
+}
+
+// Data for save in pending table
+message SendUserVerificationCodeIn {
+    // email to send code
+    string email = 1;
+}
+
+// Response for SendCode
+message SendUserVerificationCodeOut {
+    // UUID of record from pending table
+    string uuid = 1;
 }
