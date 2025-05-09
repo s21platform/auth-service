@@ -8,6 +8,8 @@
     - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
+    - [RegisterUserIn](#-RegisterUserIn)
+    - [RegisterUserOut](#-RegisterUserOut)
     - [SendUserVerificationCodeIn](#-SendUserVerificationCodeIn)
     - [SendUserVerificationCodeOut](#-SendUserVerificationCodeOut)
   
@@ -85,6 +87,41 @@ response JWT token for access
 
 
 
+<a name="-RegisterUserIn"></a>
+
+### RegisterUserIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  |  |
+| password | [string](#string) |  |  |
+| confirm_password | [string](#string) |  |  |
+| code | [string](#string) |  |  |
+| code_lookup_uuid | [string](#string) |  | UUID to look up the original verification code in pending_registrations |
+
+
+
+
+
+
+<a name="-RegisterUserOut"></a>
+
+### RegisterUserOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| access_token | [string](#string) |  |  |
+| refresh_token | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="-SendUserVerificationCodeIn"></a>
 
 ### SendUserVerificationCodeIn
@@ -131,6 +168,7 @@ Service for auth processes
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
 | CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
 | SendUserVerificationCode | [.SendUserVerificationCodeIn](#SendUserVerificationCodeIn) | [.SendUserVerificationCodeOut](#SendUserVerificationCodeOut) | Send verification code to email and save data into pending table |
+| RegisterUser | [.RegisterUserIn](#RegisterUserIn) | [.RegisterUserOut](#RegisterUserOut) |  |
 
  
 

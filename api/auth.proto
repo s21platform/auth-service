@@ -9,6 +9,7 @@ service AuthService {
     rpc CheckEmailAvailability(CheckEmailAvailabilityIn) returns (CheckEmailAvailabilityOut) {};
     // Send verification code to email and save data into pending table
     rpc SendUserVerificationCode (SendUserVerificationCodeIn) returns (SendUserVerificationCodeOut) {};
+    rpc RegisterUser (RegisterUserIn) returns (RegisterUserOut) {};
 }
 
 // Data for request JWT token for all access in our platform
@@ -43,4 +44,17 @@ message SendUserVerificationCodeIn {
 message SendUserVerificationCodeOut {
     // UUID of record from pending table
     string uuid = 1;
+}
+
+message RegisterUserIn {
+    string email = 1;
+    string password = 2;
+    string confirm_password = 3;
+    string code = 4;
+    string code_lookup_uuid = 5; // UUID to look up the original verification code in pending_registrations
+}
+
+message RegisterUserOut {
+    string access_token = 1;
+    string refresh_token = 2;
 }

@@ -141,3 +141,34 @@ func (s *Service) SendUserVerificationCode(ctx context.Context, in *auth.SendUse
 
 	return &auth.SendUserVerificationCodeOut{Uuid: uuid}, nil
 }
+
+func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*auth.RegisterUserOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("RegisterUser")
+
+	// todo добавить rate limiter
+
+	originalCode, err := s.repository.GetVerificationCode(ctx, in.CodeLookupUuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get verification code: %v", err))
+		return nil, err
+	}
+
+	if originalCode != in.Code {
+		return nil, fmt.Errorf("invalid input code")
+	}
+
+	if in.Password != in.ConfirmPassword {
+		return nil, fmt.Errorf("various passwords")
+	}
+
+	// вызываем ручку из user-service для логина и uuid
+
+	// начинаем транзакцию (сохранение в platform_accounts + отправка события в кафку)
+
+	// создаем токены и подписываем их (?? разными ключами или одним?)
+
+	// создаем сессию в sessions
+
+	// отправляем токены по rpc в ответе ручки
+}

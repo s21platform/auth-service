@@ -8,6 +8,7 @@ import (
 type DBRepo interface {
 	IsEmailAvailable(ctx context.Context, email string) (bool, error)
 	InsertPendingRegistration(ctx context.Context, email, code string) (string, error)
+	GetVerificationCode(ctx context.Context, codeLookupUUID string) (string, error)
 }
 
 type SchoolS interface {
