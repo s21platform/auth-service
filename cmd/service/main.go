@@ -16,6 +16,7 @@ import (
 	"github.com/s21platform/auth-service/internal/client/user"
 	"github.com/s21platform/auth-service/internal/config"
 	"github.com/s21platform/auth-service/internal/infra"
+	"github.com/s21platform/auth-service/internal/pkg/tx"
 	"github.com/s21platform/auth-service/internal/repository/postgres"
 	"github.com/s21platform/auth-service/internal/service"
 	"github.com/s21platform/auth-service/pkg/auth"
@@ -45,6 +46,7 @@ func main() {
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),
 			infra.Logger(logger),
+			tx.TxMiddleWire(dbRepo),
 		),
 	)
 
