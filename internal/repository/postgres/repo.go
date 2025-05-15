@@ -12,8 +12,12 @@ import (
 	"github.com/s21platform/auth-service/internal/config"
 )
 
+type Key string
+
+const KeyTx = Key("tx_repo")
+
 type Repository struct {
-	connection *sqlx.DB
+	*sqlx.DB
 }
 
 func New(cfg *config.Config) *Repository {
@@ -26,12 +30,12 @@ func New(cfg *config.Config) *Repository {
 	}
 
 	return &Repository{
-		connection: conn,
+		conn,
 	}
 }
 
 func (r *Repository) Close() {
-	_ = r.connection.Close()
+	_ = r.DB.Close()
 }
 
 func (r *Repository) IsEmailAvailable(ctx context.Context, email string) (bool, error) {
@@ -46,7 +50,7 @@ func (r *Repository) IsEmailAvailable(ctx context.Context, email string) (bool, 
 	}
 
 	var count int
-	err = r.connection.GetContext(ctx, &count, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &count, query, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to check email availability: %v", err)
 	}
@@ -67,7 +71,7 @@ func (r *Repository) InsertPendingRegistration(ctx context.Context, email, code 
 	}
 
 	var uuid string
-	err = r.connection.GetContext(ctx, &uuid, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &uuid, query, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to execute sql query: %v", err)
 	}
