@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/metrics-lib/pkg"
 
@@ -41,7 +42,10 @@ func main() {
 	userClient := user.MustConnect(cfg)
 	notificationClient := notification.New(cfg)
 
-	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, cfg.Service.Secret)
+	searchProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.SearchTopic)
+	searchKafkaProducer := kafkalib.NewProducer(searchProducerConfig)
+
+	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, searchKafkaProducer, cfg.Service)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),

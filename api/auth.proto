@@ -58,3 +58,8 @@ message RegisterUserOut {
     string access_token = 1;
     string refresh_token = 2;
 }
+
+message NewUserRegister {
+    string uuid = 1;
+    string nickname = 2;
+}

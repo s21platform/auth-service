@@ -13,15 +13,18 @@ type Config struct {
 	User         User
 	Notification Notification
 	Postgres     Postgres
+	Kafka        Kafka
 	Platform     Platform
 	Metrics      Metrics
 	Logger       Logger
 }
 
 type Service struct {
-	Port   string `env:"AUTH_SERVICE_PORT"`
-	Secret string `env:"SECRET_KEY"`
-	Name   string `env:"AUTH_SERVICE_NAME"`
+	Port          string `env:"AUTH_SERVICE_PORT"`
+	Secret        string `env:"SECRET_KEY"`
+	AccessSecret  string `env:"ACCESS_SECRET"`
+	RefreshSecret string `env:"REFRESH_SECRET"`
+	Name          string `env:"AUTH_SERVICE_NAME"`
 }
 
 type Postgres struct {
@@ -30,6 +33,12 @@ type Postgres struct {
 	Database string `env:"AUTH_SERVICE_POSTGRES_DB"`
 	Host     string `env:"AUTH_SERVICE_POSTGRES_HOST"`
 	Port     string `env:"AUTH_SERVICE_POSTGRES_PORT"`
+}
+
+type Kafka struct {
+	Host        string `env:"KAFKA_HOST"`
+	Port        string `env:"KAFKA_PORT"`
+	SearchTopic string `env:"SEARCH_SET_NEW_USER"`
 }
 
 type Community struct {

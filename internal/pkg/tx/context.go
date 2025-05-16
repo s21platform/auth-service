@@ -6,15 +6,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Key string
+type key string
 
-const KeyTx = Key("tx")
+const KeyTx = key("tx")
 
-func withDbRepoContext(ctx context.Context, repo DbRepo) context.Context {
+func withDBRepoContext(ctx context.Context, repo DBRepo) context.Context {
 	return context.WithValue(ctx, KeyTx, Tx{DbRepo: repo})
 }
 
-func TxMiddleWire(db DbRepo) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+func TxMiddleWire(db DBRepo) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
 	return func(
 		ctx context.Context,
@@ -22,7 +22,7 @@ func TxMiddleWire(db DbRepo) func(ctx context.Context, req interface{}, info *gr
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler) (
 		interface{}, error) {
-		return handler(withDbRepoContext(ctx, db), req)
+		return handler(withDBRepoContext(ctx, db), req)
 	}
 }
 

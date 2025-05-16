@@ -8,6 +8,7 @@
     - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
+    - [NewUserRegister](#-NewUserRegister)
     - [RegisterUserIn](#-RegisterUserIn)
     - [RegisterUserOut](#-RegisterUserOut)
     - [SendUserVerificationCodeIn](#-SendUserVerificationCodeIn)
@@ -81,6 +82,22 @@ response JWT token for access
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | jwt | [string](#string) |  | String with jwt |
+
+
+
+
+
+
+<a name="-NewUserRegister"></a>
+
+### NewUserRegister
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| nickname | [string](#string) |  |  |
 
 
 

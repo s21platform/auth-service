@@ -3,39 +3,48 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"math/big"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/matthewhartstonge/argon2"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/auth-service/internal/config"
+	"github.com/s21platform/auth-service/internal/model"
+	"github.com/s21platform/auth-service/internal/pkg/tx"
 	"github.com/s21platform/auth-service/pkg/auth"
 )
 
 type Service struct {
 	auth.UnimplementedAuthServiceServer
-	repository    DBRepo
-	schoolS       SchoolS
-	communityS    CommunityS
-	notificationS NotificationS
-	userS         UserS
-	secret        string
+	repository          DBRepo
+	schoolS             SchoolS
+	communityS          CommunityS
+	notificationS       NotificationS
+	searchKafkaProducer KafkaProducer
+	userS               UserS
+	secrets             config.Service
 }
 
-func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userService UserS, notificationService NotificationS, secret string) *Service {
+func New(repository DBRepo, schoolService SchoolS, communityService CommunityS, userService UserS, notificationService NotificationS, searchKafkaProducer KafkaProducer, secrets config.Service) *Service {
 	return &Service{
-		repository:    repository,
-		schoolS:       schoolService,
-		communityS:    communityService,
-		userS:         userService,
-		secret:        secret,
-		notificationS: notificationService,
+		repository:          repository,
+		schoolS:             schoolService,
+		communityS:          communityService,
+		notificationS:       notificationService,
+		userS:               userService,
+		searchKafkaProducer: searchKafkaProducer,
+		secrets:             secrets,
 	}
 }
 
@@ -70,7 +79,7 @@ func (s *Service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 
 	resp, err := s.userS.GetOrSetUser(ctx, username)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get (or set) user into user-servcie: %v", err))
+		logger.Error(fmt.Sprintf("failed to get (or set) user into user-service: %v", err))
 		return nil, status.Errorf(codes.Internal, "Не удалось получить данные пользователя")
 	}
 
@@ -82,7 +91,7 @@ func (s *Service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 		"uid":         resp,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
-	tokenString, err := token.SignedString([]byte(s.secret))
+	tokenString, err := token.SignedString([]byte(s.secrets.Secret))
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to sign token: %v", err))
 		return nil, err
@@ -96,13 +105,22 @@ func (s *Service) CheckEmailAvailability(ctx context.Context, in *auth.CheckEmai
 
 	// todo добавить rate limiter
 
-	if in.Email == "" {
+	email := strings.TrimSpace(in.Email)
+	if email == "" {
 		logger.Error("email is required")
-		return nil, fmt.Errorf("email is required")
+		return nil, status.Errorf(codes.InvalidArgument, "email is required")
 	}
+	if len(email) > 100 {
+		logger.Error("email exceeds maximum length of 100 characters")
+		return nil, status.Errorf(codes.InvalidArgument, "email exceeds maximum length of 100 characters")
+	}
+	if !regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`).MatchString(email) {
+		logger.Error("invalid email format")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid email format")
+	}
+	email = strings.ToLower(email)
 
-	in.Email = strings.ToLower(in.Email)
-	isAvailable, err := s.repository.IsEmailAvailable(ctx, in.Email)
+	isAvailable, err := s.repository.IsEmailAvailable(ctx, email)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to check email: %v", err))
 		return nil, err
@@ -117,25 +135,37 @@ func (s *Service) SendUserVerificationCode(ctx context.Context, in *auth.SendUse
 
 	// todo добавить rate limiter
 
-	if in.Email == "" {
+	email := strings.TrimSpace(in.Email)
+	if email == "" {
 		logger.Error("email is required")
 		return nil, status.Errorf(codes.InvalidArgument, "email is required")
 	}
-	in.Email = strings.ToLower(in.Email)
+	if len(email) > 100 {
+		logger.Error("email exceeds maximum length of 100 characters")
+		return nil, status.Errorf(codes.InvalidArgument, "email exceeds maximum length of 100 characters")
+	}
+	if !regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`).MatchString(email) {
+		logger.Error("invalid email format")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid email format")
+	}
+	email = strings.ToLower(email)
 
 	codeInt, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to generate verification code: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to generate code: %v", err)
 	}
 	code := fmt.Sprintf("%06d", codeInt)
 
-	err = s.notificationS.SendVerificationCode(ctx, in.Email, code)
+	err = s.notificationS.SendVerificationCode(ctx, email, code)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to send verification code: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to send code: %v", err)
 	}
 
-	uuid, err := s.repository.InsertPendingRegistration(ctx, in.Email, code)
+	uuid, err := s.repository.InsertPendingRegistration(ctx, email, code)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to insert pending registration: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to add user to pending table: %v", err)
 	}
 
@@ -148,27 +178,150 @@ func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*a
 
 	// todo добавить rate limiter
 
+	email := strings.TrimSpace(in.Email)
+	if email == "" {
+		logger.Error("email is required")
+		return nil, status.Errorf(codes.InvalidArgument, "email is required")
+	}
+	if len(email) > 100 {
+		logger.Error("email exceeds maximum length of 100 characters")
+		return nil, status.Errorf(codes.InvalidArgument, "email exceeds maximum length of 100 characters")
+	}
+	if !regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`).MatchString(email) {
+		logger.Error("invalid email format")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid email format")
+	}
+	email = strings.ToLower(email)
+
 	originalCode, err := s.repository.GetVerificationCode(ctx, in.CodeLookupUuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get verification code: %v", err))
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get verification code: %v", err)
 	}
 
 	if originalCode != in.Code {
-		return nil, fmt.Errorf("invalid input code")
+		logger.Error("verification code is invalid")
+		return nil, status.Errorf(codes.InvalidArgument, "verification code is invalid")
 	}
 
 	if in.Password != in.ConfirmPassword {
-		return nil, fmt.Errorf("various passwords")
+		logger.Error("various passwords")
+		return nil, status.Errorf(codes.InvalidArgument, "various passwords")
 	}
 
-	// вызываем ручку из user-service для логина и uuid
+	salt := make([]byte, 16)
+	_, err = rand.Read(salt)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to generate salt: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to generate salt: %v", err)
+	}
 
-	// начинаем транзакцию (сохранение в platform_accounts + отправка события в кафку)
+	saltedPassword := append([]byte(in.Password), salt...)
+	hashedPassword, err := bcrypt.GenerateFromPassword(saltedPassword, bcrypt.DefaultCost)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to hash password: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to hash password: %v", err)
+	}
 
-	// создаем токены и подписываем их (?? разными ключами или одним?)
+	resp, err := s.userS.CreateUser(ctx, email)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to create new user at user-service: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to create new user at user-service: %v", err)
+	}
 
-	// создаем сессию в sessions
+	err = tx.TxExecute(ctx, func(ctx context.Context) error {
+		platformAccount := model.PlatformAccount{
+			UserUUID:      resp.UserUuid,
+			Nickname:      resp.Nickname,
+			Email:         email,
+			PasswordHash:  string(hashedPassword),
+			PasswordSalt:  base64.StdEncoding.EncodeToString(salt),
+			HashAlgorithm: "bcrypt+salt",
+		}
+		err = s.repository.SaveNewUser(ctx, &platformAccount)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to save new user into db: %v", err))
+			return err
+		}
 
-	// отправляем токены по rpc в ответе ручки
+		msg := &auth.NewUserRegister{
+			Uuid:     resp.UserUuid,
+			Nickname: resp.Nickname,
+		}
+		err = s.searchKafkaProducer.ProduceMessage(ctx, msg, resp.UserUuid)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to produce message: %v", err))
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to complete transaction: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to complete transaction: %v", err)
+	}
+
+	refreshClaims := jwt.MapClaims{
+		"sub":  resp.UserUuid,
+		"exp":  time.Now().Add(30 * 24 * time.Hour).Unix(),
+		"iat":  time.Now().Unix(),
+		"type": "refresh",
+	}
+	refreshJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshToken, err := refreshJWT.SignedString([]byte(s.secrets.RefreshSecret))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to sign refresh JWT: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to sign refresh JWT: %v", err)
+	}
+
+	argon := argon2.DefaultConfig()
+	hashedRefreshToken, err := argon.HashEncoded([]byte(refreshToken))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to hash refresh token: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to hash refresh token: %v", err)
+	}
+
+	// todo убрать заглушки в будущем
+	userAgent := "user-agent"
+	userIP := "ip"
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		if agents := md.Get("user-agent"); len(agents) > 0 {
+			userAgent = agents[0]
+		}
+		if ips := md.Get("x-forwarded-for"); len(ips) > 0 {
+			userIP = ips[0]
+		}
+	}
+
+	sessionCreds := model.Session{
+		UserUUID:         resp.UserUuid,
+		RefreshTokenHash: string(hashedRefreshToken),
+		UserAgent:        userAgent,
+		IP:               userIP,
+	}
+	sessionId, err := s.repository.CreateSession(ctx, &sessionCreds)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to create session: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to create session: %v", err)
+	}
+
+	accessClaims := jwt.MapClaims{
+		"sid":      sessionId,
+		"sub":      resp.UserUuid,
+		"nickname": resp.Nickname,
+		"exp":      time.Now().Add(15 * time.Minute).Unix(),
+		"iat":      time.Now().Unix(),
+		"type":     "access",
+	}
+	accessJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessToken, err := accessJWT.SignedString([]byte(s.secrets.AccessSecret))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to sign access JWT: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to sign access JWT: %v", err)
+	}
+
+	return &auth.RegisterUserOut{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
 }

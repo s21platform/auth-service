@@ -3,7 +3,7 @@ package tx
 import "context"
 
 type Tx struct {
-	DbRepo DbRepo
+	DbRepo DBRepo
 }
 
 func TxExecute(ctx context.Context, cb func(ctx context.Context) error) error {

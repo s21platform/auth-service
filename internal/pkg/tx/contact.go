@@ -2,6 +2,6 @@ package tx
 
 import "context"
 
-type DbRepo interface {
+type DBRepo interface {
 	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
 }

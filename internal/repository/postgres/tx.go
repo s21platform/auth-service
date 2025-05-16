@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 )
 
 type Database interface {
 	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 }
 
 func (r *Repository) Chk(ctx context.Context) Database {
@@ -16,7 +19,7 @@ func (r *Repository) Chk(ctx context.Context) Database {
 	return r
 }
 
-func (r *Repository) WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error) {
+func (r *Repository) WithTx(ctx context.Context, cb func(ctx context.Context) error) error {
 	if tx := getTx(ctx); tx != nil {
 		return cb(ctx)
 	}
