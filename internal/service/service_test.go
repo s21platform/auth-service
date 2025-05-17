@@ -8,10 +8,11 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
-	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/auth-service/internal/config"
 	"github.com/s21platform/auth-service/pkg/auth"

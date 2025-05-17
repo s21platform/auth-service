@@ -4,8 +4,9 @@ package service
 import (
 	"context"
 
-	"github.com/s21platform/auth-service/internal/model"
 	"github.com/s21platform/user-service/pkg/user"
+
+	"github.com/s21platform/auth-service/internal/model"
 )
 
 type DBRepo interface {
