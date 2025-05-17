@@ -42,10 +42,10 @@ func main() {
 	userClient := user.MustConnect(cfg)
 	notificationClient := notification.New(cfg)
 
-	searchProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.SearchTopic)
-	searchKafkaProducer := kafkalib.NewProducer(searchProducerConfig)
+	producerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.Topic)
+	kafkaProducer := kafkalib.NewProducer(producerConfig)
 
-	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, searchKafkaProducer, cfg.Service)
+	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, kafkaProducer, cfg.Service)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),

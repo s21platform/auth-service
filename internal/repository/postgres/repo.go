@@ -16,10 +16,6 @@ import (
 	"github.com/s21platform/auth-service/internal/model"
 )
 
-type Key string
-
-const KeyTx = Key("tx_repo")
-
 type Repository struct {
 	*sqlx.DB
 }

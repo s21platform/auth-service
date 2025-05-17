@@ -36,9 +36,9 @@ type Postgres struct {
 }
 
 type Kafka struct {
-	Host        string `env:"KAFKA_HOST"`
-	Port        string `env:"KAFKA_PORT"`
-	SearchTopic string `env:"SEARCH_SET_NEW_USER"`
+	Host  string `env:"KAFKA_HOST"`
+	Port  string `env:"KAFKA_PORT"`
+	Topic string `env:"USER_REGISTER"`
 }
 
 type Community struct {
