@@ -299,7 +299,7 @@ func (s *Service) LoginV2(ctx context.Context, in *auth.LoginV2In) (*auth.LoginV
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), saltedPassword); err != nil {
 		// todo добавить функционал блокировки пользователей после n неверных паролей
 		logger.Error("invalid password")
-		return nil, status.Errorf(codes.Unauthenticated, "invalid password")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid password")
 	}
 
 	refreshClaims := jwt.MapClaims{
@@ -392,7 +392,7 @@ func (s *Service) loginByEmail(ctx context.Context, in *auth.LoginV2In) (*auth.L
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), saltedPassword); err != nil {
 		// todo добавить функционал блокировки пользователей после n неверных паролей
 		logger.Error("invalid password")
-		return nil, status.Errorf(codes.Unauthenticated, "invalid password")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid password")
 	}
 
 	refreshClaims := jwt.MapClaims{
