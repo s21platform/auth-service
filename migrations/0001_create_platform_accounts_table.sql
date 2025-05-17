@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS platform_accounts
 (
     user_uuid           UUID PRIMARY KEY,
-    nickname            VARCHAR(64) UNIQUE,
+    nickname            VARCHAR(64) UNIQUE  NOT NULL,
     email               VARCHAR(255) UNIQUE NOT NULL,
     password_hash       VARCHAR(255)        NOT NULL,
     password_salt       VARCHAR(255)        NOT NULL,

@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	logger_lib "github.com/s21platform/logger-lib"
 
@@ -172,7 +173,7 @@ func (s *Service) SendUserVerificationCode(ctx context.Context, in *auth.SendUse
 	return &auth.SendUserVerificationCodeOut{Uuid: uuid}, nil
 }
 
-func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*auth.RegisterUserOut, error) {
+func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*emptypb.Empty, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("RegisterUser")
 
@@ -261,8 +262,48 @@ func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*a
 		return nil, status.Errorf(codes.Internal, "failed to complete transaction: %v", err)
 	}
 
+	return &emptypb.Empty{}, nil
+}
+
+func (s *Service) LoginV2(ctx context.Context, in *auth.LoginV2In) (*auth.LoginV2Out, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("LoginV2")
+
+	// todo добавить rate limiter
+
+	in.Login = strings.TrimSpace(in.Login)
+	in.Login = strings.ToLower(in.Login)
+
+	if in.Login == "" {
+		logger.Error("login is empty")
+		return nil, status.Errorf(codes.InvalidArgument, "login is empty")
+	}
+
+	if regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`).MatchString(in.Login) {
+		return s.loginByEmail(ctx, in)
+	}
+
+	user, err := s.repository.GetUserByNickname(ctx, in.Login)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get user by nickname %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get user by nickname")
+	}
+
+	salt, err := base64.StdEncoding.DecodeString(user.PasswordSalt)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to decode password salt %v", err))
+		return nil, status.Errorf(codes.Internal, "invalid password salt")
+	}
+
+	saltedPassword := append([]byte(in.Password), salt...)
+	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), saltedPassword); err != nil {
+		// todo добавить функционал блокировки пользователей после n неверных паролей
+		logger.Error("invalid password")
+		return nil, status.Errorf(codes.Unauthenticated, "invalid password")
+	}
+
 	refreshClaims := jwt.MapClaims{
-		"sub":  resp.UserUuid,
+		"sub":  user.UserUUID,
 		"exp":  time.Now().Add(30 * 24 * time.Hour).Unix(),
 		"iat":  time.Now().Unix(),
 		"type": "refresh",
@@ -294,7 +335,7 @@ func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*a
 	}
 
 	sessionCreds := model.Session{
-		UserUUID:         resp.UserUuid,
+		UserUUID:         user.UserUUID,
 		RefreshTokenHash: string(hashedRefreshToken),
 		UserAgent:        userAgent,
 		IP:               userIP,
@@ -307,8 +348,8 @@ func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*a
 
 	accessClaims := jwt.MapClaims{
 		"sid":      sessionId,
-		"sub":      resp.UserUuid,
-		"nickname": resp.Nickname,
+		"sub":      user.UserUUID,
+		"nickname": user.Nickname,
 		"exp":      time.Now().Add(15 * time.Minute).Unix(),
 		"iat":      time.Now().Unix(),
 		"type":     "access",
@@ -320,7 +361,100 @@ func (s *Service) RegisterUser(ctx context.Context, in *auth.RegisterUserIn) (*a
 		return nil, status.Errorf(codes.Internal, "failed to sign access JWT: %v", err)
 	}
 
-	return &auth.RegisterUserOut{
+	return &auth.LoginV2Out{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *Service) loginByEmail(ctx context.Context, in *auth.LoginV2In) (*auth.LoginV2Out, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("loginByEmail")
+
+	if len(in.Login) > 100 {
+		logger.Error("email exceeds maximum length of 100 characters")
+		return nil, status.Errorf(codes.InvalidArgument, "email exceeds maximum length of 100 characters")
+	}
+
+	user, err := s.repository.GetUserByEmail(ctx, in.Login)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get user by email %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get user by email")
+	}
+
+	salt, err := base64.StdEncoding.DecodeString(user.PasswordSalt)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to decode password salt %v", err))
+		return nil, status.Errorf(codes.Internal, "invalid password salt")
+	}
+
+	saltedPassword := append([]byte(in.Password), salt...)
+	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), saltedPassword); err != nil {
+		// todo добавить функционал блокировки пользователей после n неверных паролей
+		logger.Error("invalid password")
+		return nil, status.Errorf(codes.Unauthenticated, "invalid password")
+	}
+
+	refreshClaims := jwt.MapClaims{
+		"sub":  user.UserUUID,
+		"exp":  time.Now().Add(30 * 24 * time.Hour).Unix(),
+		"iat":  time.Now().Unix(),
+		"type": "refresh",
+	}
+	refreshJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshToken, err := refreshJWT.SignedString([]byte(s.secrets.RefreshSecret))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to sign refresh JWT: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to sign refresh JWT: %v", err)
+	}
+
+	argon := argon2.DefaultConfig()
+	hashedRefreshToken, err := argon.HashEncoded([]byte(refreshToken))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to hash refresh token: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to hash refresh token: %v", err)
+	}
+
+	// todo убрать заглушки в будущем
+	userAgent := "user-agent"
+	userIP := "ip"
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		if agents := md.Get("user-agent"); len(agents) > 0 {
+			userAgent = agents[0]
+		}
+		if ips := md.Get("x-forwarded-for"); len(ips) > 0 {
+			userIP = ips[0]
+		}
+	}
+
+	sessionCreds := model.Session{
+		UserUUID:         user.UserUUID,
+		RefreshTokenHash: string(hashedRefreshToken),
+		UserAgent:        userAgent,
+		IP:               userIP,
+	}
+	sessionId, err := s.repository.CreateSession(ctx, &sessionCreds)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to create session: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to create session: %v", err)
+	}
+
+	accessClaims := jwt.MapClaims{
+		"sid":      sessionId,
+		"sub":      user.UserUUID,
+		"nickname": user.Nickname,
+		"exp":      time.Now().Add(15 * time.Minute).Unix(),
+		"iat":      time.Now().Unix(),
+		"type":     "access",
+	}
+	accessJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessToken, err := accessJWT.SignedString([]byte(s.secrets.AccessSecret))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to sign access JWT: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to sign access JWT: %v", err)
+	}
+
+	return &auth.LoginV2Out{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

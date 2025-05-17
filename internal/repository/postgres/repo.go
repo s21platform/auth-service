@@ -152,3 +152,43 @@ func (r *Repository) CreateSession(ctx context.Context, session *model.Session) 
 
 	return sessionID, nil
 }
+
+func (r *Repository) GetUserByNickname(ctx context.Context, nickname string) (*model.PlatformAccount, error) {
+	query, args, err := sq.
+		Select("user_uuid", "nickname", "email", "password_hash", "password_salt", "hash_algorithm").
+		From("platform_accounts").
+		Where(sq.Eq{"nickname": nickname}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	var account model.PlatformAccount
+	err = r.Chk(ctx).GetContext(ctx, &account, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute sql query: %w", err)
+	}
+
+	return &account, nil
+}
+
+func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*model.PlatformAccount, error) {
+	query, args, err := sq.
+		Select("user_uuid", "nickname", "email", "password_hash", "password_salt", "hash_algorithm").
+		From("platform_accounts").
+		Where(sq.Eq{"email": email}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	var account model.PlatformAccount
+	err = r.Chk(ctx).GetContext(ctx, &account, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute sql query: %w", err)
+	}
+
+	return &account, nil
+}

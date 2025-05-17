@@ -14,6 +14,8 @@ type DBRepo interface {
 	GetVerificationCode(ctx context.Context, codeLookupUUID string) (string, error)
 	SaveNewUser(ctx context.Context, account *model.PlatformAccount) error
 	CreateSession(ctx context.Context, session *model.Session) (string, error)
+	GetUserByNickname(ctx context.Context, nickname string) (*model.PlatformAccount, error)
+	GetUserByEmail(ctx context.Context, email string) (*model.PlatformAccount, error)
 }
 
 type SchoolS interface {

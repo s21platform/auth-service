@@ -2,6 +2,8 @@ syntax = "proto3";
 
 option go_package = "pkg/auth";
 
+import  "google/protobuf/empty.proto";
+
 // Service for auth processes
 service AuthService {
     // Login method for requesting access token from edu platform
@@ -9,7 +11,8 @@ service AuthService {
     rpc CheckEmailAvailability(CheckEmailAvailabilityIn) returns (CheckEmailAvailabilityOut) {};
     // Send verification code to email and save data into pending table
     rpc SendUserVerificationCode (SendUserVerificationCodeIn) returns (SendUserVerificationCodeOut) {};
-    rpc RegisterUser (RegisterUserIn) returns (RegisterUserOut) {};
+    rpc RegisterUser (RegisterUserIn) returns (google.protobuf.Empty) {};
+    rpc LoginV2 (LoginV2In) returns (LoginV2Out) {};
 }
 
 // Data for request JWT token for all access in our platform
@@ -54,11 +57,17 @@ message RegisterUserIn {
     string code_lookup_uuid = 5; // UUID to look up the original verification code in pending_registrations
 }
 
-message RegisterUserOut {
+message LoginV2In {
+    string login = 1;
+    string password = 2;
+}
+
+message LoginV2Out {
     string access_token = 1;
     string refresh_token = 2;
 }
 
+// kafka contracts
 message NewUserRegister {
     string uuid = 1;
     string nickname = 2;
