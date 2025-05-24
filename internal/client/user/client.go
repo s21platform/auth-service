@@ -37,3 +37,12 @@ func (c *Client) GetOrSetUser(ctx context.Context, email string) (string, error)
 	}
 	return resp.Uuid, nil
 }
+
+func (c *Client) CreateUser(ctx context.Context, email string) (*user.CreateUserOut, error) {
+	resp, err := c.client.CreateUser(ctx, &user.CreateUserIn{Email: email})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return resp, nil
+}

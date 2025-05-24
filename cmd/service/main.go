@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/metrics-lib/pkg"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/s21platform/auth-service/internal/client/user"
 	"github.com/s21platform/auth-service/internal/config"
 	"github.com/s21platform/auth-service/internal/infra"
+	"github.com/s21platform/auth-service/internal/pkg/tx"
 	"github.com/s21platform/auth-service/internal/repository/postgres"
 	"github.com/s21platform/auth-service/internal/service"
 	"github.com/s21platform/auth-service/pkg/auth"
@@ -40,11 +42,15 @@ func main() {
 	userClient := user.MustConnect(cfg)
 	notificationClient := notification.New(cfg)
 
-	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, cfg.Service.Secret)
+	producerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.Topic)
+	kafkaProducer := kafkalib.NewProducer(producerConfig)
+
+	authService := service.New(dbRepo, schoolClient, communityClient, userClient, notificationClient, kafkaProducer, cfg.Service)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.MetricsInterceptor(metrics),
 			infra.Logger(logger),
+			tx.TxMiddleWire(dbRepo),
 		),
 	)
 

@@ -8,6 +8,10 @@
     - [CheckEmailAvailabilityOut](#-CheckEmailAvailabilityOut)
     - [LoginRequest](#-LoginRequest)
     - [LoginResponse](#-LoginResponse)
+    - [LoginV2In](#-LoginV2In)
+    - [LoginV2Out](#-LoginV2Out)
+    - [NewUserRegister](#-NewUserRegister)
+    - [RegisterUserIn](#-RegisterUserIn)
     - [SendUserVerificationCodeIn](#-SendUserVerificationCodeIn)
     - [SendUserVerificationCodeOut](#-SendUserVerificationCodeOut)
   
@@ -85,6 +89,73 @@ response JWT token for access
 
 
 
+<a name="-LoginV2In"></a>
+
+### LoginV2In
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| login | [string](#string) |  |  |
+| password | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-LoginV2Out"></a>
+
+### LoginV2Out
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| access_token | [string](#string) |  |  |
+| refresh_token | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-NewUserRegister"></a>
+
+### NewUserRegister
+kafka contracts
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| nickname | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-RegisterUserIn"></a>
+
+### RegisterUserIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| email | [string](#string) |  |  |
+| password | [string](#string) |  |  |
+| confirm_password | [string](#string) |  |  |
+| code | [string](#string) |  |  |
+| code_lookup_uuid | [string](#string) |  | UUID to look up the original verification code in pending_registrations |
+
+
+
+
+
+
 <a name="-SendUserVerificationCodeIn"></a>
 
 ### SendUserVerificationCodeIn
@@ -131,6 +202,8 @@ Service for auth processes
 | Login | [.LoginRequest](#LoginRequest) | [.LoginResponse](#LoginResponse) | Login method for requesting access token from edu platform |
 | CheckEmailAvailability | [.CheckEmailAvailabilityIn](#CheckEmailAvailabilityIn) | [.CheckEmailAvailabilityOut](#CheckEmailAvailabilityOut) |  |
 | SendUserVerificationCode | [.SendUserVerificationCodeIn](#SendUserVerificationCodeIn) | [.SendUserVerificationCodeOut](#SendUserVerificationCodeOut) | Send verification code to email and save data into pending table |
+| RegisterUser | [.RegisterUserIn](#RegisterUserIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
+| LoginV2 | [.LoginV2In](#LoginV2In) | [.LoginV2Out](#LoginV2Out) |  |
 
  
 
