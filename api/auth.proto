@@ -13,6 +13,7 @@ service AuthService {
     rpc SendUserVerificationCode (SendUserVerificationCodeIn) returns (SendUserVerificationCodeOut) {};
     rpc RegisterUser (RegisterUserIn) returns (google.protobuf.Empty) {};
     rpc LoginV2 (LoginV2In) returns (LoginV2Out) {};
+    rpc RefreshAccessToken (RefreshAccessTokenIn) returns (RefreshAccessTokenOut) {};
 }
 
 // Data for request JWT token for all access in our platform
@@ -71,4 +72,12 @@ message LoginV2Out {
 message NewUserRegister {
     string uuid = 1;
     string nickname = 2;
+}
+
+message RefreshAccessTokenIn {
+    string refresh_token = 1;
+}
+
+message RefreshAccessTokenOut {
+    string access_token = 1;
 }

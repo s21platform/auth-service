@@ -51,6 +51,21 @@ func (mr *MockDBRepoMockRecorder) CreateSession(ctx, session interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockDBRepo)(nil).CreateSession), ctx, session)
 }
 
+// GetSessionByRefreshToken mocks base method.
+func (m *MockDBRepo) GetSessionByRefreshToken(ctx context.Context, refreshTokenHash string) (*model.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSessionByRefreshToken", ctx, refreshTokenHash)
+	ret0, _ := ret[0].(*model.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSessionByRefreshToken indicates an expected call of GetSessionByRefreshToken.
+func (mr *MockDBRepoMockRecorder) GetSessionByRefreshToken(ctx, refreshTokenHash interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSessionByRefreshToken", reflect.TypeOf((*MockDBRepo)(nil).GetSessionByRefreshToken), ctx, refreshTokenHash)
+}
+
 // GetUserByEmail mocks base method.
 func (m *MockDBRepo) GetUserByEmail(ctx context.Context, email string) (*model.PlatformAccount, error) {
 	m.ctrl.T.Helper()
@@ -79,6 +94,21 @@ func (m *MockDBRepo) GetUserByNickname(ctx context.Context, nickname string) (*m
 func (mr *MockDBRepoMockRecorder) GetUserByNickname(ctx, nickname interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByNickname", reflect.TypeOf((*MockDBRepo)(nil).GetUserByNickname), ctx, nickname)
+}
+
+// GetUserByUUID mocks base method.
+func (m *MockDBRepo) GetUserByUUID(ctx context.Context, uuid string) (*model.PlatformAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByUUID", ctx, uuid)
+	ret0, _ := ret[0].(*model.PlatformAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUUID indicates an expected call of GetUserByUUID.
+func (mr *MockDBRepoMockRecorder) GetUserByUUID(ctx, uuid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUUID", reflect.TypeOf((*MockDBRepo)(nil).GetUserByUUID), ctx, uuid)
 }
 
 // GetVerificationCode mocks base method.

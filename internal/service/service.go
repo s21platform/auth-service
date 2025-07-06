@@ -459,3 +459,50 @@ func (s *Service) loginByEmail(ctx context.Context, in *auth.LoginV2In) (*auth.L
 		RefreshToken: refreshToken,
 	}, nil
 }
+
+func (s *Service) RefreshAccessToken(ctx context.Context, in *auth.RefreshAccessTokenIn) (*auth.RefreshAccessTokenOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("RefreshAccessToken")
+
+	if in.RefreshToken == "" {
+		logger.Error("refresh token is empty")
+		return nil, status.Errorf(codes.InvalidArgument, "refresh token is required")
+	}
+
+	argon := argon2.DefaultConfig()
+	hashedRefreshToken, err := argon.HashEncoded([]byte(in.RefreshToken))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to hash refresh token: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to process refresh token")
+	}
+
+	session, err := s.repository.GetSessionByRefreshToken(ctx, string(hashedRefreshToken))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get session by refresh token: %v", err))
+		return nil, status.Errorf(codes.Unauthenticated, "invalid refresh token")
+	}
+
+	user, err := s.repository.GetUserByUUID(ctx, session.UserUUID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get user: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get user data")
+	}
+
+	accessClaims := jwt.MapClaims{
+		"sub":      user.UserUUID,
+		"nickname": user.Nickname,
+		"exp":      time.Now().Add(15 * time.Minute).Unix(),
+		"iat":      time.Now().Unix(),
+		"type":     "access",
+	}
+	accessJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessToken, err := accessJWT.SignedString([]byte(s.secrets.AccessSecret))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to sign access JWT: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to create access token")
+	}
+
+	return &auth.RefreshAccessTokenOut{
+		AccessToken: accessToken,
+	}, nil
+}

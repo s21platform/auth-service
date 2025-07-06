@@ -188,3 +188,47 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*model.P
 
 	return &account, nil
 }
+
+func (r *Repository) GetUserByUUID(ctx context.Context, uuid string) (*model.PlatformAccount, error) {
+	query, args, err := sq.
+		Select("user_uuid", "nickname", "email", "password_hash", "password_salt", "hash_algorithm").
+		From("platform_accounts").
+		Where(sq.Eq{"user_uuid": uuid}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	var account model.PlatformAccount
+	err = r.Chk(ctx).GetContext(ctx, &account, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute sql query: %w", err)
+	}
+
+	return &account, nil
+}
+
+func (r *Repository) GetSessionByRefreshToken(ctx context.Context, refreshTokenHash string) (*model.Session, error) {
+	query, args, err := sq.Select("id", "user_uuid", "refresh_token_hash", "user_agent", "ip_address", "is_active", "is_blocked", "refresh_token_issued_at", "created_at", "updated_at", "expires_at").
+		From("sessions").
+		Where(sq.Eq{"refresh_token_hash": refreshTokenHash}).
+		Where("expires_at > NOW()").
+		Where(sq.Eq{"is_blocked": false}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	var session model.Session
+	err = r.Chk(ctx).GetContext(ctx, &session, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("no valid session found for refresh token")
+		}
+		return nil, fmt.Errorf("failed to execute sql query: %w", err)
+	}
+
+	return &session, nil
+}
