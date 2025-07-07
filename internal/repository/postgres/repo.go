@@ -212,9 +212,11 @@ func (r *Repository) GetUserByUUID(ctx context.Context, uuid string) (*model.Pla
 func (r *Repository) GetSessionByRefreshToken(ctx context.Context, refreshTokenHash string) (*model.Session, error) {
 	query, args, err := sq.Select("id", "user_uuid", "refresh_token_hash", "user_agent", "ip_address", "is_active", "is_blocked", "refresh_token_issued_at", "created_at", "updated_at", "expires_at").
 		From("sessions").
-		Where(sq.Eq{"refresh_token_hash": refreshTokenHash}).
-		Where("expires_at > NOW()").
-		Where(sq.Eq{"is_blocked": false}).
+		Where(sq.And{
+			sq.Eq{"refresh_token_hash": refreshTokenHash},
+			sq.GtOrEq{"expires_at": time.Now()},
+			sq.Eq{"is_blocked": false},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {

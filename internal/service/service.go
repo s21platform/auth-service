@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"regexp"
@@ -11,7 +13,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/matthewhartstonge/argon2"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -315,12 +316,8 @@ func (s *Service) LoginV2(ctx context.Context, in *auth.LoginV2In) (*auth.LoginV
 		return nil, status.Errorf(codes.Internal, "failed to sign refresh JWT: %v", err)
 	}
 
-	argon := argon2.DefaultConfig()
-	hashedRefreshToken, err := argon.HashEncoded([]byte(refreshToken))
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to hash refresh token: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to hash refresh token: %v", err)
-	}
+	sum := sha256.Sum256([]byte(refreshToken))
+	hashedRefreshToken := hex.EncodeToString(sum[:])
 
 	// todo убрать заглушки в будущем
 	userAgent := "user-agent"
@@ -336,7 +333,7 @@ func (s *Service) LoginV2(ctx context.Context, in *auth.LoginV2In) (*auth.LoginV
 
 	sessionCreds := model.Session{
 		UserUUID:         user.UserUUID,
-		RefreshTokenHash: string(hashedRefreshToken),
+		RefreshTokenHash: hashedRefreshToken,
 		UserAgent:        userAgent,
 		IP:               userIP,
 	}
@@ -408,12 +405,8 @@ func (s *Service) loginByEmail(ctx context.Context, in *auth.LoginV2In) (*auth.L
 		return nil, status.Errorf(codes.Internal, "failed to sign refresh JWT: %v", err)
 	}
 
-	argon := argon2.DefaultConfig()
-	hashedRefreshToken, err := argon.HashEncoded([]byte(refreshToken))
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to hash refresh token: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to hash refresh token: %v", err)
-	}
+	sum := sha256.Sum256([]byte(refreshToken))
+	hashedRefreshToken := hex.EncodeToString(sum[:])
 
 	// todo убрать заглушки в будущем
 	userAgent := "user-agent"
@@ -429,7 +422,7 @@ func (s *Service) loginByEmail(ctx context.Context, in *auth.LoginV2In) (*auth.L
 
 	sessionCreds := model.Session{
 		UserUUID:         user.UserUUID,
-		RefreshTokenHash: string(hashedRefreshToken),
+		RefreshTokenHash: hashedRefreshToken,
 		UserAgent:        userAgent,
 		IP:               userIP,
 	}
@@ -469,14 +462,10 @@ func (s *Service) RefreshAccessToken(ctx context.Context, in *auth.RefreshAccess
 		return nil, status.Errorf(codes.InvalidArgument, "refresh token is required")
 	}
 
-	argon := argon2.DefaultConfig()
-	hashedRefreshToken, err := argon.HashEncoded([]byte(in.RefreshToken))
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to hash refresh token: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to process refresh token")
-	}
+	sum := sha256.Sum256([]byte(in.RefreshToken))
+	hashedRefreshToken := hex.EncodeToString(sum[:])
 
-	session, err := s.repository.GetSessionByRefreshToken(ctx, string(hashedRefreshToken))
+	session, err := s.repository.GetSessionByRefreshToken(ctx, hashedRefreshToken)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get session by refresh token: %v", err))
 		return nil, status.Errorf(codes.Unauthenticated, "invalid refresh token")

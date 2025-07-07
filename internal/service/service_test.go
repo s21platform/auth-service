@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"strings"
 	"testing"
@@ -536,7 +538,8 @@ func TestService_RefreshAccessToken(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("RefreshAccessToken")
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
-		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), gomock.Any()).Return(&model.Session{
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(&model.Session{
 			UserUUID:         userUUID,
 			RefreshTokenHash: "hashed_token",
 			UserAgent:        "test-agent",
@@ -600,7 +603,8 @@ func TestService_RefreshAccessToken(t *testing.T) {
 		mockLogger.EXPECT().Error(gomock.Any())
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
-		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), gomock.Any()).Return(nil, expectedErr)
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(nil, expectedErr)
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
 		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
@@ -624,7 +628,8 @@ func TestService_RefreshAccessToken(t *testing.T) {
 		mockLogger.EXPECT().Error(gomock.Any())
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
-		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), gomock.Any()).Return(&model.Session{
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(&model.Session{
 			UserUUID:         userUUID,
 			RefreshTokenHash: "hashed_token",
 			UserAgent:        "test-agent",
@@ -653,7 +658,8 @@ func TestService_RefreshAccessToken(t *testing.T) {
 		mockLogger.EXPECT().Error(gomock.Any())
 		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
 
-		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), gomock.Any()).Return(nil, errors.New("no valid session found for refresh token"))
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(nil, errors.New("no valid session found for refresh token"))
 
 		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
 		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
