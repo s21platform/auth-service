@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"strings"
 	"testing"
@@ -15,6 +17,7 @@ import (
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/auth-service/internal/config"
+	"github.com/s21platform/auth-service/internal/model"
 	"github.com/s21platform/auth-service/pkg/auth"
 )
 
@@ -65,7 +68,6 @@ func TestServer_Login(t *testing.T) {
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp.Jwt)
 
-		// Verify JWT claims
 		token, _ := jwt.Parse(resp.Jwt, func(token *jwt.Token) (interface{}, error) {
 			return []byte(cfgService.Secret), nil
 		})
@@ -500,6 +502,175 @@ func TestService_SendUserVerificationCode(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, st.Code())
 		assert.Contains(t, st.Message(), "database error")
+		assert.Nil(t, result)
+	})
+}
+
+func TestService_RefreshAccessToken(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	cfgService := config.Service{
+		Port:          "8080",
+		Secret:        "secret",
+		AccessSecret:  "access_secret",
+		RefreshSecret: "refresh_secret",
+		Name:          "auth_service",
+	}
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockSchoolSrv := NewMockSchoolS(ctrl)
+	mockCommunitySrv := NewMockCommunityS(ctrl)
+	mockUserSrv := NewMockUserS(ctrl)
+	mockNotificationS := NewMockNotificationS(ctrl)
+	mockUserKafka := NewMockKafkaProducer(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	t.Run("should_refresh_access_token_successfully", func(t *testing.T) {
+		refreshToken := "valid_refresh_token"
+		userUUID := "test-user-uuid"
+		nickname := "testuser"
+		email := "test@example.com"
+
+		mockLogger.EXPECT().AddFuncName("RefreshAccessToken")
+		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(&model.Session{
+			UserUUID:         userUUID,
+			RefreshTokenHash: "hashed_token",
+			UserAgent:        "test-agent",
+			IP:               "127.0.0.1",
+		}, nil)
+
+		mockRepo.EXPECT().GetUserByUUID(gomock.Any(), userUUID).Return(&model.PlatformAccount{
+			UserUUID:      userUUID,
+			Nickname:      nickname,
+			Email:         email,
+			PasswordHash:  "hashed_password",
+			PasswordSalt:  "salt",
+			HashAlgorithm: "bcrypt+salt",
+		}, nil)
+
+		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
+		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
+			RefreshToken: refreshToken,
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.NotEmpty(t, result.AccessToken)
+
+		token, err := jwt.Parse(result.AccessToken, func(token *jwt.Token) (interface{}, error) {
+			return []byte(cfgService.AccessSecret), nil
+		})
+		assert.NoError(t, err)
+		assert.True(t, token.Valid)
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		assert.True(t, ok)
+		assert.Equal(t, userUUID, claims["sub"])
+		assert.Equal(t, nickname, claims["nickname"])
+		assert.Equal(t, "access", claims["type"])
+	})
+
+	t.Run("should_handle_empty_refresh_token", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("RefreshAccessToken")
+		mockLogger.EXPECT().Error("refresh token is empty")
+		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
+		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
+			RefreshToken: "",
+		})
+
+		assert.Error(t, err)
+		st, ok := status.FromError(err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.InvalidArgument, st.Code())
+		assert.Contains(t, st.Message(), "refresh token is required")
+		assert.Nil(t, result)
+	})
+
+	t.Run("should_handle_session_not_found", func(t *testing.T) {
+		refreshToken := "invalid_refresh_token"
+		expectedErr := errors.New("no valid session found for refresh token")
+
+		mockLogger.EXPECT().AddFuncName("RefreshAccessToken")
+		mockLogger.EXPECT().Error(gomock.Any())
+		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(nil, expectedErr)
+
+		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
+		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
+			RefreshToken: refreshToken,
+		})
+
+		assert.Error(t, err)
+		st, ok := status.FromError(err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Unauthenticated, st.Code())
+		assert.Contains(t, st.Message(), "invalid refresh token")
+		assert.Nil(t, result)
+	})
+
+	t.Run("should_handle_user_not_found", func(t *testing.T) {
+		refreshToken := "valid_refresh_token"
+		userUUID := "test-user-uuid"
+		expectedErr := errors.New("user not found")
+
+		mockLogger.EXPECT().AddFuncName("RefreshAccessToken")
+		mockLogger.EXPECT().Error(gomock.Any())
+		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(&model.Session{
+			UserUUID:         userUUID,
+			RefreshTokenHash: "hashed_token",
+			UserAgent:        "test-agent",
+			IP:               "127.0.0.1",
+		}, nil)
+
+		mockRepo.EXPECT().GetUserByUUID(gomock.Any(), userUUID).Return(nil, expectedErr)
+
+		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
+		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
+			RefreshToken: refreshToken,
+		})
+
+		assert.Error(t, err)
+		st, ok := status.FromError(err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, st.Code())
+		assert.Contains(t, st.Message(), "failed to get user data")
+		assert.Nil(t, result)
+	})
+
+	t.Run("should_handle_hash_error", func(t *testing.T) {
+		refreshToken := strings.Repeat("a", 10000)
+
+		mockLogger.EXPECT().AddFuncName("RefreshAccessToken")
+		mockLogger.EXPECT().Error(gomock.Any())
+		ctx := context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		sum := sha256.Sum256([]byte(refreshToken))
+		mockRepo.EXPECT().GetSessionByRefreshToken(gomock.Any(), hex.EncodeToString(sum[:])).Return(nil, errors.New("no valid session found for refresh token"))
+
+		s := New(mockRepo, mockSchoolSrv, mockCommunitySrv, mockUserSrv, mockNotificationS, mockUserKafka, cfgService)
+		result, err := s.RefreshAccessToken(ctx, &auth.RefreshAccessTokenIn{
+			RefreshToken: refreshToken,
+		})
+
+		assert.Error(t, err)
+		st, ok := status.FromError(err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Unauthenticated, st.Code())
+		assert.Contains(t, st.Message(), "invalid refresh token")
 		assert.Nil(t, result)
 	})
 }

@@ -17,6 +17,8 @@ type DBRepo interface {
 	CreateSession(ctx context.Context, session *model.Session) (string, error)
 	GetUserByNickname(ctx context.Context, nickname string) (*model.PlatformAccount, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.PlatformAccount, error)
+	GetUserByUUID(ctx context.Context, uuid string) (*model.PlatformAccount, error)
+	GetSessionByRefreshToken(ctx context.Context, refreshTokenHash string) (*model.Session, error)
 }
 
 type SchoolS interface {

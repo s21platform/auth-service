@@ -11,6 +11,8 @@
     - [LoginV2In](#-LoginV2In)
     - [LoginV2Out](#-LoginV2Out)
     - [NewUserRegister](#-NewUserRegister)
+    - [RefreshAccessTokenIn](#-RefreshAccessTokenIn)
+    - [RefreshAccessTokenOut](#-RefreshAccessTokenOut)
     - [RegisterUserIn](#-RegisterUserIn)
     - [SendUserVerificationCodeIn](#-SendUserVerificationCodeIn)
     - [SendUserVerificationCodeOut](#-SendUserVerificationCodeOut)
@@ -137,6 +139,36 @@ kafka contracts
 
 
 
+<a name="-RefreshAccessTokenIn"></a>
+
+### RefreshAccessTokenIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| refresh_token | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-RefreshAccessTokenOut"></a>
+
+### RefreshAccessTokenOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| access_token | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="-RegisterUserIn"></a>
 
 ### RegisterUserIn
@@ -204,6 +236,7 @@ Service for auth processes
 | SendUserVerificationCode | [.SendUserVerificationCodeIn](#SendUserVerificationCodeIn) | [.SendUserVerificationCodeOut](#SendUserVerificationCodeOut) | Send verification code to email and save data into pending table |
 | RegisterUser | [.RegisterUserIn](#RegisterUserIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
 | LoginV2 | [.LoginV2In](#LoginV2In) | [.LoginV2Out](#LoginV2Out) |  |
+| RefreshAccessToken | [.RefreshAccessTokenIn](#RefreshAccessTokenIn) | [.RefreshAccessTokenOut](#RefreshAccessTokenOut) |  |
 
  
 
